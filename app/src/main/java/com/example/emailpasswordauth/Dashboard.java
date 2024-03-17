@@ -28,13 +28,17 @@ import android.Manifest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -118,7 +122,11 @@ public class Dashboard extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                            Collections.reverse(documents);
+
+                            // Process the reversed list of documents
+                            for (DocumentSnapshot document : documents) {
                                 TextView text = new TextView(getActivity().getApplicationContext());
                                 LocalDate date = LocalDate.parse(document.getId(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                                 DateTimeFormatter long_format = DateTimeFormatter.ofPattern("MMMM d, yyyy");
