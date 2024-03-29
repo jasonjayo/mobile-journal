@@ -45,6 +45,14 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        Button backToLogin = findViewById(R.id.loginLink);
+        backToLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
         auth = FirebaseAuth.getInstance();
     }
 

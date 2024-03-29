@@ -82,6 +82,10 @@ public class ViewJournalEntry extends Fragment {
         TextView contentTextView = view.findViewById(R.id.entry_content);
         contentTextView.setText(content);
 
+        String rating = getArguments().getString("rating");
+        TextView ratingTextView = view.findViewById(R.id.entry_rating);
+        ratingTextView.setText(rating);
+
 
     }
 }

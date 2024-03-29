@@ -140,6 +140,7 @@ public class Dashboard extends Fragment {
                                         Bundle bundle = new Bundle();
                                         bundle.putString("day", document.getId());
                                         bundle.putString("content", document.get("content").toString());
+                                        bundle.putString("rating", document.get("prompt_val").toString());
                                         Navigation.findNavController(view).navigate(R.id.action_dashboard_to_viewJournalEntry, bundle);
                                     }
                                 });
