@@ -28,21 +28,19 @@ public class RegisterActivity extends AppCompatActivity {
 
         Button signUpButton = findViewById(R.id.signUpButton);
 
-        signUpButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                EditText emailInput = findViewById(R.id.editTextTextEmailAddress);
-                String email = emailInput.getText().toString();
-                EditText passwordInput = findViewById(R.id.editTextTextPassword);
-                String password = passwordInput.getText().toString();
-                String confirmPassword = ((EditText) findViewById(R.id.editTextTextConfirmPassword)).getText().toString();
+        signUpButton.setOnClickListener(v -> {
+            EditText emailInput = findViewById(R.id.editTextTextEmailAddress);
+            String email = emailInput.getText().toString();
+            EditText passwordInput = findViewById(R.id.editTextTextPassword);
+            String password = passwordInput.getText().toString();
+            String confirmPassword = ((EditText) findViewById(R.id.editTextTextConfirmPassword)).getText().toString();
 
-                if (!password.equals(confirmPassword)) {
-                    Toast.makeText(RegisterActivity.this, "Passwords do not match.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                signUp(email, password);
+            if (!password.equals(confirmPassword)) {
+                Toast.makeText(RegisterActivity.this, "Passwords do not match.", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            signUp(email, password);
         });
 
         Button backToLogin = findViewById(R.id.loginLink);

@@ -7,69 +7,168 @@
     android:contentDescription="Rate your stress levels"
     tools:context=".CreateJournalEntry">
 
-    <EditText
-        android:id="@+id/reflection_text"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp"
-        android:layout_marginBottom="21dp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="Start typing your reflection..."
-        android:inputType="textMultiLine"
-        app:layout_constraintBottom_toTopOf="@+id/create_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/prompt_slider" />
-
-    <com.google.android.material.slider.Slider
-        android:id="@+id/prompt_slider"
-        android:layout_width="153dp"
-        android:layout_height="63dp"
-        android:layout_marginBottom="56dp"
-        android:contentDescription="Rate your stress levels"
-        android:stepSize="1"
-        android:valueFrom="0"
-        android:valueTo="5"
-        app:layout_constraintBottom_toTopOf="@+id/reflection_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="63dp"
-        android:layout_marginBottom="46dp"
-        android:text="New Reflection"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/textView5"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/create_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="73dp"
-        android:text="Create"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reflection_text" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
-        android:text="Rate your stress levels"
-        app:layout_constraintBottom_toTopOf="@+id/prompt_slider"
-        app:layout_constraintEnd_toEndOf="@+id/prompt_slider"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/sentimentSad"
+                android:layout_width="71dp"
+                android:layout_height="68dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="47dp"
+                android:backgroundTint="#FFC107"
+                android:scaleType="fitCenter"
+                app:layout_constraintEnd_toStartOf="@+id/sentimentNeutral"
+                app:layout_constraintTop_toBottomOf="@+id/textView4"
+                app:srcCompat="@drawable/baseline_sentiment_very_dissatisfied_24"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/sentimentNeutral"
+                android:layout_width="71dp"
+                android:layout_height="68dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#03A9F4"
+                android:scaleType="fitCenter"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView4"
+                app:srcCompat="@drawable/baseline_sentiment_neutral_24"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/sentimentHappy"
+                android:layout_width="71dp"
+                android:layout_height="68dp"
+                android:layout_marginStart="39dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#8BC34A"
+                android:scaleType="fitCenter"
+                app:layout_constraintStart_toEndOf="@+id/sentimentNeutral"
+                app:layout_constraintTop_toBottomOf="@+id/textView4"
+                app:srcCompat="@drawable/baseline_sentiment_satisfied_alt_24"
+                app:tint="#FFFFFF" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/materialDivider3"
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="33dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/sentimentSad" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/materialDivider4"
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/prompt_slider" />
+
+            <TextView
+                android:id="@+id/prompt"
+                android:layout_width="348dp"
+                android:layout_height="22dp"
+                android:layout_marginTop="26dp"
+                android:text="prompt text"
+                android:textAlignment="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/materialDivider3" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/prompt_slider"
+                android:layout_width="153dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="4dp"
+                android:contentDescription="Rate your stress levels"
+                android:stepSize="1"
+                android:valueFrom="0"
+                android:valueTo="5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/prompt" />
+
+            <EditText
+                android:id="@+id/reflection_text"
+                android:layout_width="344dp"
+                android:layout_height="346dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:gravity="start|top"
+                android:hint="Start typing your reflection...\n\n\nTry writing about what's been happening today and how you've been feeling."
+                android:inputType="textMultiLine"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/materialDivider4" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="27dp"
+                android:text="New Reflection"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/create_btn"
+                android:layout_width="135dp"
+                android:layout_height="44dp"
+                android:text="Create"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+
+            <CheckBox
+                android:id="@+id/checkBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:checked="false"
+                android:text="Share on Map"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/reflection_text" />
+
+            <Button
+                android:id="@+id/addPicBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="72dp"
+                android:text="Add photo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.489"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/create_btn" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/addPicBtn"
+                tools:srcCompat="@tools:sample/avatars" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
