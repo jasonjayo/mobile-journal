@@ -1,5 +1,9 @@
 package com.example.emailpasswordauth;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,8 +13,21 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import org.w3c.dom.Text;
+
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -29,6 +46,8 @@ public class ViewJournalEntry extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private FirebaseAuth auth;
 
     public ViewJournalEntry() {
         // Required empty public constructor
@@ -59,6 +78,8 @@ public class ViewJournalEntry extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        auth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -82,10 +103,58 @@ public class ViewJournalEntry extends Fragment {
         TextView contentTextView = view.findViewById(R.id.entry_content);
         contentTextView.setText(content);
 
-        String rating = getArguments().getString("rating");
-        TextView ratingTextView = view.findViewById(R.id.entry_rating);
-        ratingTextView.setText(rating);
+        String prompt_key = getArguments().getString("prompt_key");
+        TextView promptKeyTextView = view.findViewById(R.id.prompt_key);
+        promptKeyTextView.setText(Prompts.possiblePrompts.get(prompt_key));
 
+        String prompt_value = getArguments().getString("prompt_value");
+        TextView ratingTextView = view.findViewById(R.id.prompt_val);
+        ratingTextView.setText(prompt_value + " / 5");
+
+
+        // show image if present
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+
+        StorageReference imageRef = storageRef.child(auth.getUid() + "/" + day + ".jpg");
+
+        File localFile;
+        try {
+            localFile = File.createTempFile("images", "jpg");
+
+            File finalLocalFile = localFile;
+            imageRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+                // Local temp file has been created
+                ImageView imgView = view.findViewById(R.id.viewEntryImage);
+                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getAbsolutePath());
+                ExifInterface exif;
+                try {
+                    exif = new ExifInterface(finalLocalFile);
+
+                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                    Matrix matrix = new Matrix();
+                    switch (orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            matrix.postRotate(90);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            matrix.postRotate(180);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            matrix.postRotate(270);
+                            break;
+                    }
+                    Bitmap rotatedBitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+                    imgView.setImageBitmap(rotatedBitmap);
+
+                } catch (IOException e) {
+                    imgView.setImageBitmap(bmp);
+                }
+            }).addOnFailureListener(exception -> Toast.makeText(getContext(), "Unable to load image. " + exception, Toast.LENGTH_SHORT).show());
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "Unable to load image. " + e, Toast.LENGTH_SHORT).show();
+        }
 
     }
 }

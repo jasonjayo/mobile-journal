@@ -133,14 +133,15 @@ public class Dashboard extends Fragment {
                                 text.setText(date.format(long_format));
                                 text.setPaintFlags(text.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                                 int padding = (int) getResources().getDimension(R.dimen.padding);
-                                text.setPadding(padding,padding,padding,padding);
+                                text.setPadding(padding, padding, padding, padding);
                                 text.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
                                         Bundle bundle = new Bundle();
                                         bundle.putString("day", document.getId());
                                         bundle.putString("content", document.get("content").toString());
-                                        bundle.putString("rating", document.get("prompt_val").toString());
+                                        bundle.putString("prompt_key", document.get("prompt_key").toString());
+                                        bundle.putString("prompt_value", document.get("prompt_val").toString());
                                         Navigation.findNavController(view).navigate(R.id.action_dashboard_to_viewJournalEntry, bundle);
                                     }
                                 });
