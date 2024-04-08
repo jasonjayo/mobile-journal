@@ -56,4 +56,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
+    public void openMap(View v) {
+        Intent i = new Intent(this, MapActivity.class);
+        startActivity(i);
+    }
 }
