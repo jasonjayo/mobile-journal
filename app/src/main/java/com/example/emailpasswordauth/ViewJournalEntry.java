@@ -103,6 +103,10 @@ public class ViewJournalEntry extends Fragment {
         TextView contentTextView = view.findViewById(R.id.entry_content);
         contentTextView.setText(content);
 
+        String sentiment = getArguments().getString("sentiment");
+        TextView sentimentTextView = view.findViewById(R.id.entry_sentiment);
+        sentimentTextView.setText(sentiment);
+
         String prompt_key = getArguments().getString("prompt_key");
         TextView promptKeyTextView = view.findViewById(R.id.prompt_key);
         promptKeyTextView.setText(Prompts.possiblePrompts.get(prompt_key));
