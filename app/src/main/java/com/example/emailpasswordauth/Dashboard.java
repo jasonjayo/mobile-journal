@@ -105,7 +105,14 @@ public class Dashboard extends Fragment {
         TextView userEmail = getView().findViewById(R.id.userEmail);
         auth = FirebaseAuth.getInstance();
         userEmail.setText(auth.getCurrentUser().getEmail());
-
+        userEmail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle = new Bundle();
+                bundle.putString("email", auth.getCurrentUser().getEmail());
+                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_profile, bundle);
+            }
+        });
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         Button new_entry_btn = getView().findViewById(R.id.new_entry_btn);
