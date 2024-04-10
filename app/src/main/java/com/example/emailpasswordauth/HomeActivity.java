@@ -1,35 +1,23 @@
 package com.example.emailpasswordauth;
 
-import static android.content.ContentValues.TAG;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.service.credentials.CreateEntry;
-import android.util.Log;
-import android.view.Gravity;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Random;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,30 +25,41 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         createNotificationChannel();
-
-
-
+        scheduleRandomNotification();
     }
 
     private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is not in the Support Library.
-        if (ActivityCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "TEST_CHANNEL";
             String description = "Test Channel";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel("MY_CHANNEL", name, importance);
             channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this.
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
     }
 
+    private void scheduleRandomNotification() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                sendNotification();
+                int delay = (random.nextInt(4) + 1) * 60 * 60 * 1000;
+                handler.postDelayed(this, delay);
+            }
+        }, 0);
+    }
+
+    private void sendNotification() {
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        Notification.Builder builder = new Notification.Builder(this, "MY_CHANNEL")
+                .setSmallIcon(R.drawable.journal_app_logo)
+                .setContentTitle("App Reminder")
+                .setContentText("Don't forget to use the app!")
+                .setAutoCancel(true);
+        notificationManager.notify(0, builder.build());
+    }
 
     public void openMap(View v) {
         Intent i = new Intent(this, MapActivity.class);
