@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/frameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".Profile">
 
     <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="580dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/emailProfile"
@@ -23,19 +30,19 @@
             android:fontFamily="sans-serif-black"
             android:text="TextView"
             android:textSize="28sp" />
+
+        <View
+            android:id="@+id/dividerEmail"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="?android:attr/listDivider" />
+
         <TextView
             android:id="@+id/avgRating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="TextView"
-            android:textSize="14sp" />
-        <TextView
-            android:id="@+id/totalRating"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-black"
-            android:text="TextView"
+            android:text="Average Prompt Rating"
             android:textSize="14sp" />
 
         <RatingBar
@@ -50,10 +57,76 @@
             android:stepSize="0.25" />
 
         <View
-            android:id="@+id/divider"
+            android:id="@+id/dividerRating"
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="?android:attr/listDivider" />
+
     </LinearLayout>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/avgRating2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Average Mood"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+
+    <ImageButton
+        android:id="@+id/sentimentSad2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="96dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#FFC107"
+        android:clickable="false"
+        android:contextClickable="false"
+        android:scaleType="fitCenter"
+        android:scaleX="2"
+        android:scaleY="2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/avgRating2"
+        app:srcCompat="@drawable/baseline_sentiment_very_dissatisfied_24"
+        app:tint="#FFFFFF" />
+
+    <ImageButton
+        android:id="@+id/sentimentHappy2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="99dp"
+        android:backgroundTint="#8BC34A"
+        android:clickable="false"
+        android:scaleType="fitCenter"
+        android:scaleX="2"
+        android:scaleY="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sentimentNeutral2"
+        app:layout_constraintTop_toBottomOf="@+id/avgRating2"
+        app:srcCompat="@drawable/baseline_sentiment_satisfied_alt_24"
+        app:tint="#FFFFFF" />
+
+    <ImageButton
+        android:id="@+id/sentimentNeutral2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="16dp"
+        android:alpha="1"
+        android:backgroundTint="#03A9F4"
+        android:clickable="false"
+        android:contextClickable="false"
+        android:scaleType="fitCenter"
+        android:scaleX="2"
+        android:scaleY="2"
+        app:layout_constraintStart_toEndOf="@+id/sentimentSad2"
+        app:layout_constraintTop_toBottomOf="@+id/avgRating2"
+        app:srcCompat="@drawable/baseline_sentiment_neutral_24"
+        app:tint="#FFFFFF" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
