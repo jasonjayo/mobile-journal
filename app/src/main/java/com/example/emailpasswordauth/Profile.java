@@ -1,19 +1,38 @@
 package com.example.emailpasswordauth;
 
+import static android.content.ContentValues.TAG;
+
+import static java.lang.Integer.parseInt;
+
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,7 +92,48 @@ public class Profile extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         TextView userEmail = getView().findViewById(R.id.emailProfile);
+        TextView avrgRating = getView().findViewById(R.id.avgRating);
+        TextView totalRating = getView().findViewById(R.id.totalRating);
+
+
         userEmail.setText(getArguments().getString("email"));
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("journal_entries").document(auth.getUid()).collection("entries")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                            Collections.reverse(documents);
+                            RatingBar avgRating = getView().findViewById(R.id.moodRating);
+                            int totalRatings = 0;
+                            // Process the reversed list of documents
+                            for (DocumentSnapshot document : documents) {
+                               /* switch (document.get("sentiment").toString()) {
+                                    case ("HAPPY"):
+                                        happyCount++;
+                                        break;
+                                    case ("NEUTRAL"):
+                                        neutralCount++;
+                                        break;
+                                    default:
+                                        angryCount++;
+                                        break;
+                                } */
+                                if (document.get("prompt_val") != null) {
+                                    totalRatings += parseInt(document.get("prompt_val").toString());
+                                }
+                            }
+                            totalRating.setText(String.valueOf(totalRatings/ documents.size()));
+                            //avgRating.setRating(totalRatings/ratingCount);
+
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
     }
 
 }
