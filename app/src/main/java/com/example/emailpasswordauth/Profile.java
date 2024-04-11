@@ -2,6 +2,7 @@ package com.example.emailpasswordauth;
 
 import static android.content.ContentValues.TAG;
 
+import static com.example.emailpasswordauth.Prompts.possiblePrompts;
 import static java.lang.Integer.parseInt;
 
 import android.content.Intent;
@@ -33,7 +34,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -104,8 +107,23 @@ public class Profile extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                            TextView userEntries = getView().findViewById(R.id.entryCounter);
+                            LinearLayout layout = getView().findViewById(R.id.ratingsLayout);
+                            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            );
+                            userEntries.setText(String.valueOf(documents.size() + 1) + " Journal Entries");
                             RatingBar avgRating = getView().findViewById(R.id.moodRating);
                             int totalRatings = 0, happyCount = 0, neutralCount = 0, sadCount = 0;
+                            //Make indexes for prompts to later make ratingbars.
+                            Map<Integer, String> intArrays = new HashMap<>();
+                            int v = 0;
+                            for (String key : possiblePrompts.keySet()) {
+                                String stringValue = possiblePrompts.get(key);
+                                intArrays.put(v, key);
+                                v++;
+                            }
                             // Process the reversed list of documents
                             for (DocumentSnapshot document : documents) {
                                 if (document.get("sentiment") != null) {
@@ -126,23 +144,37 @@ public class Profile extends Fragment {
                                     totalRatings += parseInt(document.get("prompt_val").toString());
                                 }
                             }
-                            ImageButton sadButton = getView().findViewById(R.id.sentimentSad2);
-                            ImageButton neutralButton = getView().findViewById(R.id.sentimentNeutral2);
-                            ImageButton happyButton = getView().findViewById(R.id.sentimentHappy2);
-                            float happy = (float)happyCount/documents.size();
-                            float neutral = (float)neutralCount/documents.size();
-                            float sad = (float)sadCount/documents.size();
-                            //userEmail.setText(String.valueOf(happy * 255));
-                            happyButton.setImageAlpha((int)(happy * 255));
-                            neutralButton.setImageAlpha((int)(neutral * 255));
-                            sadButton.setImageAlpha((int)(sad * 255));
+                            DrawMoodAverages((float) happyCount, documents, (float) neutralCount, (float) sadCount);
 
                             float rating = (float) totalRatings / documents.size();
                             avgRating.setRating(rating);
+                            for (String i : possiblePrompts.values())
+                            {
+                                TextView caption = new TextView(getActivity().getApplicationContext());
+                                caption.setText(i + ":");
+
+                                RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
+                                bar.setMax(5);
+                                layout.addView(caption, layoutParams);
+                                layout.addView(bar, layoutParams);
+
+                            }
 
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
+                    }
+
+                    private void DrawMoodAverages(float happyCount, List<DocumentSnapshot> documents, float neutralCount, float sadCount) {
+                        ImageButton sadButton = getView().findViewById(R.id.sentimentSad2);
+                        ImageButton neutralButton = getView().findViewById(R.id.sentimentNeutral2);
+                        ImageButton happyButton = getView().findViewById(R.id.sentimentHappy2);
+                        float happy = happyCount / documents.size();
+                        float neutral = neutralCount / documents.size();
+                        float sad = sadCount / documents.size();
+                        happyButton.setImageAlpha((int)(happy * 255));
+                        neutralButton.setImageAlpha((int)(neutral * 255));
+                        sadButton.setImageAlpha((int)(sad * 255));
                     }
                 });
     }
