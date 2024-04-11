@@ -3,6 +3,7 @@ package com.example.emailpasswordauth;
 import static android.content.ContentValues.TAG;
 
 import static com.example.emailpasswordauth.Prompts.possiblePrompts;
+import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
 import android.content.Intent;
@@ -124,10 +125,11 @@ public class Profile extends Fragment {
                                 v++;
                             }
                             //create array for each prompt's totals and set a default value
-                            int[] totalRatingsCombined = new int[possiblePrompts.size()];
+                            int[][] totalRatingsCombined = new int[possiblePrompts.size()][2];
                             for (int i = 0;
                                  i < totalRatingsCombined.length; i++) {
-                                totalRatingsCombined[i] = 0;
+                                totalRatingsCombined[i][0] = 0; //This will be for the total stars
+                                totalRatingsCombined[i][1] = 0; //This will be the total times the prompt is used.
                             }
                             // Process the reversed list of documents
                             for (DocumentSnapshot document : documents) {
@@ -151,7 +153,9 @@ public class Profile extends Fragment {
                                         String oldKey = document.get("prompt_key").toString();
                                         if (intArrays.containsKey(oldKey)) {
                                             int key = parseInt(String.valueOf(intArrays.get(oldKey)));
-                                            totalRatingsCombined[key] += parseInt(document.get("prompt_val").toString());
+                                            totalRatingsCombined[key][0] += parseInt(document.get("prompt_val").toString());
+                                            totalRatingsCombined[key][1]++;
+
                                         }
 
 
@@ -167,19 +171,17 @@ public class Profile extends Fragment {
                             {
 
                                 TextView caption = new TextView(getActivity().getApplicationContext());
-                                //caption.setText(intArrays.keySet().toString());
                                 caption.setText(i + ":");
+                                RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
 
-                                TextView example = new TextView(getActivity().getApplicationContext());
-                                example.setText(String.valueOf(totalRatingsCombined[v]));
-                                v++;
-
-                                //RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
-                                //bar.setMax(5);
+                                float soloRating = ( parseFloat(String.valueOf(totalRatingsCombined[v][0]))/ parseFloat(String.valueOf(totalRatingsCombined[v][1])));
+                                bar.setRating(soloRating);
                                 layout.addView(caption, layoutParams);
-                                layout.addView(example, layoutParams);
-
-                                //layout.addView(bar, layoutParams);
+                                layout.addView(bar, layoutParams);
+                                bar.setMax(5);
+                                bar.setNumStars(5);
+                                bar.setClickable(false);
+                                v++;
 
                             }
 
