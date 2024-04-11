@@ -117,12 +117,17 @@ public class Profile extends Fragment {
                             RatingBar avgRating = getView().findViewById(R.id.moodRating);
                             int totalRatings = 0, happyCount = 0, neutralCount = 0, sadCount = 0;
                             //Make indexes for prompts to later make ratingbars.
-                            Map<Integer, String> intArrays = new HashMap<>();
+                            Map<String, Integer> intArrays = new HashMap<>();
                             int v = 0;
                             for (String key : possiblePrompts.keySet()) {
-                                String stringValue = possiblePrompts.get(key);
-                                intArrays.put(v, key);
+                                intArrays.put(key, v);
                                 v++;
+                            }
+                            //create array for each prompt's totals and set a default value
+                            int[] totalRatingsCombined = new int[possiblePrompts.size()];
+                            for (int i = 0;
+                                 i < totalRatingsCombined.length; i++) {
+                                totalRatingsCombined[i] = 0;
                             }
                             // Process the reversed list of documents
                             for (DocumentSnapshot document : documents) {
@@ -142,21 +147,39 @@ public class Profile extends Fragment {
 
                                 if (document.get("prompt_val") != null) {
                                     totalRatings += parseInt(document.get("prompt_val").toString());
+                                    if (document.get("prompt_key") != null) {
+                                        String oldKey = document.get("prompt_key").toString();
+                                        if (intArrays.containsKey(oldKey)) {
+                                            int key = parseInt(String.valueOf(intArrays.get(oldKey)));
+                                            totalRatingsCombined[key] += parseInt(document.get("prompt_val").toString());
+                                        }
+
+
+                                    }
                                 }
                             }
                             DrawMoodAverages((float) happyCount, documents, (float) neutralCount, (float) sadCount);
 
                             float rating = (float) totalRatings / documents.size();
                             avgRating.setRating(rating);
+                            v = 0; //reuse v for iteration
                             for (String i : possiblePrompts.values())
                             {
+
                                 TextView caption = new TextView(getActivity().getApplicationContext());
+                                //caption.setText(intArrays.keySet().toString());
                                 caption.setText(i + ":");
 
-                                RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
-                                bar.setMax(5);
+                                TextView example = new TextView(getActivity().getApplicationContext());
+                                example.setText(String.valueOf(totalRatingsCombined[v]));
+                                v++;
+
+                                //RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
+                                //bar.setMax(5);
                                 layout.addView(caption, layoutParams);
-                                layout.addView(bar, layoutParams);
+                                layout.addView(example, layoutParams);
+
+                                //layout.addView(bar, layoutParams);
 
                             }
 
