@@ -15,6 +15,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,12 @@ public class Dashboard extends Fragment {
     private String mParam2;
 
     private FirebaseAuth auth;
+
+    ViewJournalEntryAdapter adapter;
+
+    private RecyclerView recyclerView;
+
+    private List<DocumentSnapshot> dataList;
 
     public Dashboard() {
         // Required empty public constructor
@@ -105,7 +114,14 @@ public class Dashboard extends Fragment {
         TextView userEmail = getView().findViewById(R.id.userEmail);
         auth = FirebaseAuth.getInstance();
         userEmail.setText(auth.getCurrentUser().getEmail());
-
+        userEmail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle = new Bundle();
+                bundle.putString("email", auth.getCurrentUser().getEmail());
+                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_profile, bundle);
+            }
+        });
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         Button new_entry_btn = getView().findViewById(R.id.new_entry_btn);
@@ -123,37 +139,16 @@ public class Dashboard extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             List<DocumentSnapshot> documents = task.getResult().getDocuments();
-                            Collections.reverse(documents);
+                            Collections.reverse(documents); // reversed so most recent first
 
-                            // Process the reversed list of documents
-                            for (DocumentSnapshot document : documents) {
-                                TextView text = new TextView(getActivity().getApplicationContext());
-                                LocalDate date = LocalDate.parse(document.getId(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                                DateTimeFormatter long_format = DateTimeFormatter.ofPattern("MMMM d, yyyy");
-                                text.setText(date.format(long_format));
-                                text.setPaintFlags(text.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-                                int padding = (int) getResources().getDimension(R.dimen.padding);
-                                text.setPadding(padding, padding, padding, padding);
-                                text.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        Bundle bundle = new Bundle();
-                                        bundle.putString("day", document.getId());
-                                        bundle.putString("content", document.get("content").toString());
-                                        bundle.putString("prompt_key", document.get("prompt_key").toString());
-                                        bundle.putString("prompt_value", document.get("prompt_val").toString());
-                                        Navigation.findNavController(view).navigate(R.id.action_dashboard_to_viewJournalEntry, bundle);
-                                    }
-                                });
+                            recyclerView = getView().findViewById(R.id.recyclerView);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                                LinearLayout layout = getView().findViewById(R.id.linearLayout);
-                                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                                        LinearLayout.LayoutParams.MATCH_PARENT,
-                                        LinearLayout.LayoutParams.WRAP_CONTENT
-                                );
-                                layout.addView(text, layoutParams);
+                            dataList = new ArrayList<>();
+                            dataList.addAll(documents);
 
-                            }
+                            adapter = new ViewJournalEntryAdapter(getContext(), dataList);
+                            recyclerView.setAdapter(adapter);
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
@@ -191,5 +186,10 @@ public class Dashboard extends Fragment {
             }
         });
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }

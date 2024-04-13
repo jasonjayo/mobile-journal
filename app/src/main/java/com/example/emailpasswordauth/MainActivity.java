@@ -42,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
                 EditText passwordInput = findViewById(R.id.editTextTextPassword);
                 String password = passwordInput.getText().toString();
 
-                signIn(email, password);
+                if (password.length() > 0) {
+                    signIn(email, password);
+                }
             }
         });
 

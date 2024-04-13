@@ -6,6 +6,11 @@
     app:startDestination="@id/dashboard">
 
     <fragment
+        android:id="@+id/profile"
+        android:name="com.example.emailpasswordauth.Profile"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+    <fragment
         android:id="@+id/dashboard"
         android:name="com.example.emailpasswordauth.Dashboard"
         android:label="fragment_dashboard"
@@ -13,6 +18,9 @@
         <action
             android:id="@+id/action_dashboard_to_viewJournalEntry"
             app:destination="@id/viewJournalEntry" />
+        <action
+            android:id="@+id/action_dashboard_to_profile"
+            app:destination="@id/profile" />
     </fragment>
     <fragment
         android:id="@+id/viewJournalEntry"
