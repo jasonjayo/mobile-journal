@@ -154,7 +154,7 @@ public class CreateJournalEntry extends AppCompatActivity {
             entry.put("content", reflection_text);
             entry.put("prompt_key", selectedPromptKey);
             entry.put("prompt_val", slider_val);
-            if (entryLocation != null){
+            if (entryLocation.isEmpty()){
                 entry.put("entry_location", entryLocation);
             }
 
