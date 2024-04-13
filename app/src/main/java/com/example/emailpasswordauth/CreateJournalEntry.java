@@ -6,23 +6,34 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.example.emailpasswordauth.databinding.ActivityMainBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.slider.Slider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,6 +44,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +57,16 @@ public class CreateJournalEntry extends AppCompatActivity {
     Uri imageUri;
 
     String sentiment;
+
+    // Map Variables
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private boolean userLocationPermissionGranted;
+    private Location userLocation;
+    private LatLng defaultLocation;
+    private double userLat;
+    private double userLong;
+    Map<String, Double> entryLocation = new HashMap<>();
+    private boolean mapShareEnabled;
 
     private void registerPicLauncher() {
         addPicLauncher = registerForActivityResult(
@@ -70,6 +92,8 @@ public class CreateJournalEntry extends AppCompatActivity {
         addPicBtn.setOnClickListener(view -> {
             openCam();
         });
+ // adding this for getting users location..
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -118,21 +142,34 @@ public class CreateJournalEntry extends AppCompatActivity {
             Slider slider = findViewById(R.id.prompt_slider);
             int slider_val = (int) slider.getValue();
 
+
+            //Map Code
+            defaultLocation = new LatLng(52.661252, -8.6301239);
+
+
+
+
             Map<String, Object> entry = new HashMap<>();
             entry.put("sentiment", sentiment);
             entry.put("content", reflection_text);
             entry.put("prompt_key", selectedPromptKey);
             entry.put("prompt_val", slider_val);
+            if (entryLocation != null){
+                entry.put("entry_location", entryLocation);
+            }
 
             DateTimeFormatter date_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate today = LocalDate.now();
+
+
+
+
 
             // save file
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             StorageReference imageRef = storageRef.child(auth.getUid() + "/" + imageUri.getLastPathSegment());
             UploadTask uploadTask = imageRef.putFile(imageUri);
-
             uploadTask.addOnFailureListener(exception -> {
                 Toast.makeText(CreateJournalEntry.this, "Failed to upload photo " + exception, Toast.LENGTH_SHORT).show();
             }).addOnSuccessListener(taskSnapshot -> {
@@ -186,6 +223,83 @@ public class CreateJournalEntry extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show();
             }
+        } else if (requestCode == 2) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                userLocationPermissionGranted = true;
+                // get location of users device.
+                getUserLocationForEntry();
+            }
+        } else {
+            Toast.makeText(this, "Location permission required", Toast.LENGTH_LONG).show();
         }
+
     }
+    private void getUserLocationForEntry() {
+        try {
+        if (userLocationPermissionGranted) {
+            Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+            locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    if (task.isSuccessful()) {
+                        // update the users latitude and longitude values to be the ones retrieved from getting devices location.
+                        userLocation = task.getResult();
+                        if (userLocation != null) {
+                            userLat = userLocation.getLatitude();
+                            userLong = userLocation.getLongitude();
+                        }
+                    } else {
+                        Log.d("error", "Current location is null. Using defaults.");
+                        userLat = defaultLocation.latitude;
+                        userLong = defaultLocation.longitude;
+                    }
+                    entryLocation.put("latitude", userLat);
+                    entryLocation.put("longitude", userLong);
+                }
+            });
+        }
+        } catch(SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+
+    }
+
+    private void getPermissionForUserLocation() {
+        // if permission granted update variable
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            userLocationPermissionGranted = true;
+            getUserLocationForEntry();
+        } else {
+            // make a request for permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    2);
+
+        }
+
+    }
+    public void mapShareToggle(View v){
+        CheckBox mapCheckBox = findViewById(R.id.checkBox);
+        // Adding entry to map
+        // if box is checked and permission granted we get users location
+        if (mapCheckBox.isChecked()) {
+            if (userLocationPermissionGranted) {
+                getUserLocationForEntry();
+                //   if permission not granted we go to request it
+            } else {
+                getPermissionForUserLocation();
+            }
+        }
+
+
+        }
+
+
+
 }
+
+
+
