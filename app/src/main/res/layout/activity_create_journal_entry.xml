@@ -140,6 +140,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:checked="false"
+                android:onClick="mapShareToggle"
                 android:text="Share on Map"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

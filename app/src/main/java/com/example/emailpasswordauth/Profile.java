@@ -1,19 +1,43 @@
 package com.example.emailpasswordauth;
 
+import static android.content.ContentValues.TAG;
+
+import static com.example.emailpasswordauth.Prompts.possiblePrompts;
+import static java.lang.Float.parseFloat;
+import static java.lang.Integer.parseInt;
+
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,7 +97,111 @@ public class Profile extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         TextView userEmail = getView().findViewById(R.id.emailProfile);
+
         userEmail.setText(getArguments().getString("email"));
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("journal_entries").document(auth.getUid()).collection("entries")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                            TextView userEntries = getView().findViewById(R.id.entryCounter);
+                            LinearLayout layout = getView().findViewById(R.id.ratingsLayout);
+                            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            );
+                            userEntries.setText(String.valueOf(documents.size() + 1) + " Journal Entries");
+                            RatingBar avgRating = getView().findViewById(R.id.moodRating);
+                            int totalRatings = 0, happyCount = 0, neutralCount = 0, sadCount = 0;
+                            //Make indexes for prompts to later make ratingbars.
+                            Map<String, Integer> intArrays = new HashMap<>();
+                            int v = 0;
+                            for (String key : possiblePrompts.keySet()) {
+                                intArrays.put(key, v);
+                                v++;
+                            }
+                            //create array for each prompt's totals and set a default value
+                            int[][] totalRatingsCombined = new int[possiblePrompts.size()][2];
+                            for (int i = 0;
+                                 i < totalRatingsCombined.length; i++) {
+                                totalRatingsCombined[i][0] = 0; //This will be for the total stars
+                                totalRatingsCombined[i][1] = 0; //This will be the total times the prompt is used.
+                            }
+                            // Process the reversed list of documents
+                            for (DocumentSnapshot document : documents) {
+                                if (document.get("sentiment") != null) {
+                                    switch (document.get("sentiment").toString()) {
+                                        case ("HAPPY"):
+                                            happyCount++;
+                                            break;
+                                        case ("NEUTRAL"):
+                                            neutralCount++;
+                                            break;
+                                        default:
+                                            sadCount++;
+                                            break;
+                                    }
+                                } else neutralCount++;
+
+                                if (document.get("prompt_val") != null) {
+                                    totalRatings += parseInt(document.get("prompt_val").toString());
+                                    if (document.get("prompt_key") != null) {
+                                        String oldKey = document.get("prompt_key").toString();
+                                        if (intArrays.containsKey(oldKey)) {
+                                            int key = parseInt(String.valueOf(intArrays.get(oldKey)));
+                                            totalRatingsCombined[key][0] += parseInt(document.get("prompt_val").toString());
+                                            totalRatingsCombined[key][1]++;
+
+                                        }
+
+
+                                    }
+                                }
+                            }
+                            DrawMoodAverages((float) happyCount, documents, (float) neutralCount, (float) sadCount);
+
+                            float rating = (float) totalRatings / documents.size();
+                            avgRating.setRating(rating);
+                            v = 0; //reuse v for iteration
+                            for (String i : possiblePrompts.values())
+                            {
+
+                                TextView caption = new TextView(getActivity().getApplicationContext());
+                                caption.setText(i + ":");
+                                RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
+
+                                float soloRating = ( parseFloat(String.valueOf(totalRatingsCombined[v][0]))/ parseFloat(String.valueOf(totalRatingsCombined[v][1])));
+                                bar.setRating(soloRating);
+                                layout.addView(caption, layoutParams);
+                                layout.addView(bar, layoutParams);
+                                bar.setMax(5);
+                                bar.setNumStars(5);
+                                bar.setClickable(false);
+                                v++;
+
+                            }
+
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+
+                    private void DrawMoodAverages(float happyCount, List<DocumentSnapshot> documents, float neutralCount, float sadCount) {
+                        ImageButton sadButton = getView().findViewById(R.id.sentimentSad2);
+                        ImageButton neutralButton = getView().findViewById(R.id.sentimentNeutral2);
+                        ImageButton happyButton = getView().findViewById(R.id.sentimentHappy2);
+                        float happy = happyCount / documents.size();
+                        float neutral = neutralCount / documents.size();
+                        float sad = sadCount / documents.size();
+                        happyButton.setImageAlpha((int)(happy * 255));
+                        neutralButton.setImageAlpha((int)(neutral * 255));
+                        sadButton.setImageAlpha((int)(sad * 255));
+                    }
+                });
     }
 
 }

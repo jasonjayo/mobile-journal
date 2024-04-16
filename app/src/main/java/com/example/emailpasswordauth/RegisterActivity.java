@@ -40,6 +40,11 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
+            if (password.length() < 8) {
+                Toast.makeText(RegisterActivity.this, "Password must contain 8 or more characters.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             signUp(email, password);
         });
 
