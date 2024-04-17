@@ -104,8 +104,31 @@ public class ViewJournalEntry extends Fragment {
         contentTextView.setText(content);
 
         String sentiment = getArguments().getString("sentiment");
-        TextView sentimentTextView = view.findViewById(R.id.entry_sentiment);
-        sentimentTextView.setText(sentiment);
+        TextView sentimentTextView = view.findViewById(R.id.FeelingText);
+        sentimentTextView.setText("You were feeling " + sentiment + " today");
+
+        final float inactiveMoodBtnOpacity = 0.05f;
+
+        ImageView NeutralImage = view.findViewById(R.id.Neutral);
+        ImageView HappyImage = view.findViewById(R.id.Happy);
+        ImageView SadImage = view.findViewById(R.id.Sad);
+
+        if("HAPPY".equals(sentiment)) {
+            HappyImage.setAlpha(1f);
+            NeutralImage.setAlpha(inactiveMoodBtnOpacity);
+            SadImage.setAlpha(inactiveMoodBtnOpacity);
+        }
+        if("NEUTRAL".equals(sentiment)) {
+            HappyImage.setAlpha(inactiveMoodBtnOpacity);
+            NeutralImage.setAlpha(1f);
+            SadImage.setAlpha(inactiveMoodBtnOpacity);
+        }
+        if("SAD".equals(sentiment)) {
+            HappyImage.setAlpha(inactiveMoodBtnOpacity);
+            NeutralImage.setAlpha(inactiveMoodBtnOpacity);
+            SadImage.setAlpha(1f);
+        }
+
 
         String prompt_key = getArguments().getString("prompt_key");
         TextView promptKeyTextView = view.findViewById(R.id.prompt_key);
