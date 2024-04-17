@@ -12,6 +12,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Calendar;
 import java.util.Random;
 
 public class HomeActivity extends AppCompatActivity {
@@ -25,7 +26,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         createNotificationChannel();
-        scheduleRandomNotification();
+        scheduleFixedNotifications();
     }
 
     private void createNotificationChannel() {
@@ -40,23 +41,49 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void scheduleRandomNotification() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                sendNotification();
-                int delay = (random.nextInt(4) + 1) * 60 * 60 * 1000;
-                handler.postDelayed(this, delay);
-            }
-        }, 0);
+    private void scheduleFixedNotifications() {
+        scheduleNotificationAt(10, 0, "Good morning!");
+        scheduleNotificationAt(16, 0, "Don't forget about us!");
     }
 
-    private void sendNotification() {
+    private void scheduleNotificationAt(int hour, int minute, String title) {
+
+        Calendar calendar = Calendar.getInstance();
+        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = calendar.get(Calendar.MINUTE);
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+
+        if (currentHour > hour || (currentHour == hour && currentMinute >= minute)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        long delay = calendar.getTimeInMillis() - System.currentTimeMillis();
+
+        handler.postDelayed(() -> {
+            sendNotification(title);
+            scheduleFixedNotifications();
+        }, delay);
+    }
+
+    private void sendNotification(String title) {
+        // Randomly select a question
+        String[] prompts = Prompts.possiblePrompts.values().toArray(new String[0]);
+        String[] questions = Prompts.possibleQuestions.values().toArray(new String[0]);
+        String content;
+        if (random.nextBoolean()) {
+            content = prompts[random.nextInt(prompts.length)];
+        } else {
+            content = questions[random.nextInt(questions.length)];
+        }
+
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         Notification.Builder builder = new Notification.Builder(this, "MY_CHANNEL")
                 .setSmallIcon(R.drawable.journal_app_logo)
-                .setContentTitle("App Reminder")
-                .setContentText("Don't forget to use the app!")
+                .setContentTitle(title)
+                .setContentText(content)
                 .setAutoCancel(true);
         notificationManager.notify(0, builder.build());
     }
