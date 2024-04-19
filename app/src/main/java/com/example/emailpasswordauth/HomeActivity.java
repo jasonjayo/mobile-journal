@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import java.util.Calendar;
 import java.util.Random;
@@ -86,6 +88,16 @@ public class HomeActivity extends AppCompatActivity {
                 .setContentText(content)
                 .setAutoCancel(true);
         notificationManager.notify(0, builder.build());
+    }
+
+    public void openProfile(View view) {
+        NavController navController = Navigation.findNavController(this, R.id.fragmentContainerView2);
+        navController.navigate(R.id.profile);
+    }
+
+    public void openDashboard(View view) {
+        NavController navController = Navigation.findNavController(this, R.id.fragmentContainerView2);
+        navController.navigate(R.id.dashboard);
     }
 
     public void openMap(View v) {

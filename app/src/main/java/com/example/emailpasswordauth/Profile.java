@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -96,11 +97,29 @@ public class Profile extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView userEmail = getView().findViewById(R.id.emailProfile);
+        Bundle args = getArguments();
+        if (args != null) {
+            String userEmail = args.getString("email");
+            if (userEmail != null) {
+                TextView userEmailTextView = view.findViewById(R.id.emailProfile);
+                userEmailTextView.setText(userEmail);
+            }
+        } else {
+            Log.e(TAG, "Arguments are null");
+        }
 
-        userEmail.setText(getArguments().getString("email"));
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("journal_entries").document(Objects.requireNonNull(auth.getUid())).collection("entries")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                        // Rest of your code to populate UI with Firestore data
+                    } else {
+                        Log.w(TAG, "Error getting documents.", task.getException());
+                    }
+                });
         db.collection("journal_entries").document(auth.getUid()).collection("entries")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
