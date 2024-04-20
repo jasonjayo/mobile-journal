@@ -15,7 +15,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -25,15 +24,20 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.CameraPosition;
 
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.PlaceLikelihood;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+
+
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+
 
     private static final String TAG = MapActivity.class.getSimpleName();
     private GoogleMap map;
@@ -46,7 +50,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient fusedLocationProviderClient;
 
     // Default location is given as Limerick in case user doesn't grant us location permissions.
-    private final LatLng defaultLocation = new LatLng(52.661252,-8.6301239 );
+    private final LatLng defaultLocation = new LatLng(52.661252, -8.6301239);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean locationPermissionGranted;
@@ -66,6 +70,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List[] likelyPlaceAttributions;
     private LatLng[] likelyPlaceLatLngs;
 
+    // Retrieving Coords Data
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth auth;
+    private List<DocumentSnapshot> appUsers;
+
+    private List<DocumentSnapshot> appUserEntries;
+    CollectionReference allAppUsers = db.collection("journal_entries");
+
+
+    ArrayList<ArrayList> markerLocations = new ArrayList<>();
+
+    ArrayList<Object> markers = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +101,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        auth = FirebaseAuth.getInstance();
     }
 
     private void updateLocationUI() {
@@ -100,10 +119,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 lastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
+
     private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -133,7 +153,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 });
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
@@ -173,20 +193,127 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         updateLocationUI();
     }
 
+    // Get all Users on the App
+    public void getAllAppUsersLocations() {
+        // **** Getting all the user's who are on the App
+        allAppUsers.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                    appUsers = new ArrayList<>();
+                    appUsers.addAll(documents);
+                    for (int i = 0; i < appUsers.size(); i++) {
+                        Log.d("userIds", appUsers.get(i).getId()); // will show all ids of users
+                        DocumentReference appUserDoc = appUsers.get(i).getReference(); // reference to all these user profs
+
+                        //  **** Get all the individual entries within this users entries collection (TBD: where the location field exists)
+                        appUserDoc.collection("entries").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d("goodjob", " this worked bro");
+                                    List<DocumentSnapshot> documents2 = task.getResult().getDocuments();
+                                    appUserEntries = new ArrayList<>();
+                                    appUserEntries.addAll(documents2);
+                                    for (int i = 0; i < appUserEntries.size(); i++) {
+                                        if (appUserEntries.get(i).contains("entry_lat")) {
+                                            Log.d("entryIds", appUserEntries.get(i).getId() + " " + appUserEntries.get(i).get("entry_lat"));
+                                            ArrayList<Double> userCoords = new ArrayList<Double>();
+                                            userCoords.add((Double) appUserEntries.get(i).get("entry_lat"));
+                                            userCoords.add((Double) appUserEntries.get(i).get("entry_long"));
+                                            markerLocations.add(userCoords);
+                                        }
+                                        Log.d("mate", markerLocations.toString());
+
+                                    }
+                                } else {
+                                    Log.d("bruh", "there is an error brudda");
+                                    Log.d(TAG, "Error getting documents: ", task.getException());
+                                }
+                            }
+
+                        });
+                    }
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
+        Log.d("mama", markers.toString());
+    }
+
+
+
+
+    public void getEntryLocations() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Getting all the user's who are on the App
+//                journalEntries.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                if (task.isSuccessful()) {
+//                    List<DocumentSnapshot> documents = task.getResult().getDocuments();
+//                    dataList = new ArrayList<>();
+//                    dataList.addAll(documents);
+//                   for (int i = 0; i < dataList.size(); i++){
+//                       Log.d("gettingDocs", dataList.get(i).getId());
+//                       // Gettings all the app user's entries.
+//                       db.collection("journal_entries").document( dataList.get(i).getId()).collection("entries")
+//                   }
+////                    for (QueryDocumentSnapshot document : task.getResult()) {
+////                        Log.d("gettingDocs", document.getId());
+////                    }
+//                } else {
+//                    Log.d(TAG, "Error getting documents: ", task.getException());
+//                }
+//            }
+//        });
+
+        // *** Problem here is that I am not authorised to view anyone else's journal entries, only my own, so cant access the location of anyone else's entries :(.
+        getAllAppUsersLocations();
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+        ArrayList<LatLng> markers = new ArrayList<>();
         //LatLng limerick = new LatLng(52.661252,-8.6301239 );
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         this.map = googleMap;
-       // googleMap.addMarker(new MarkerOptions()
-        //        .position(limerick).title("Limerick"));
-       // googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(limerick, 15));
+        Log.d("point", markerLocations.toString());
+//        for (int i = 0; i < markerLocations.size(); i++) {
+
+
+//            for (int j = 0; j < markerLocations.get(i).size();){
+//            }
+//                Double lat = (Double) markerLocations.get(i).get(j);
+//                Double lon = (Double) markerLocations.get(i).get(j++);
+//
+//                LatLng marker = new LatLng(lat, lon);
+//                markers.add(marker);
+//           }
+
+
+
+
+
 
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+        getEntryLocations();
+        Log.d("point", markerLocations.toString());
+//        for(int k = 0; k < markers.size(); k++){
+//            googleMap.addMarker(new MarkerOptions()
+//                    .position(markers.get(k)));
+//        }
+        // googleMap.addMarker(new MarkerOptions()
+        //        .position(limerick).title("Limerick"));
+//        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(1), 15));
     }
 
 

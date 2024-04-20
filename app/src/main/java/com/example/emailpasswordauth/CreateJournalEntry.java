@@ -63,9 +63,9 @@ public class CreateJournalEntry extends AppCompatActivity {
     private boolean userLocationPermissionGranted;
     private Location userLocation;
     private LatLng defaultLocation;
-    private double userLat;
-    private double userLong;
-    Map<String, Double> entryLocation = new HashMap<>();
+    private Double userLat;
+    private Double userLong;
+
     private boolean mapShareEnabled;
 
     private void registerPicLauncher() {
@@ -154,8 +154,9 @@ public class CreateJournalEntry extends AppCompatActivity {
             entry.put("content", reflection_text);
             entry.put("prompt_key", selectedPromptKey);
             entry.put("prompt_val", slider_val);
-            if (!entryLocation.isEmpty()){
-                entry.put("entry_location", entryLocation);
+            if (userLong != null && userLat != null) {
+entry.put("entry_lat", userLat);
+entry.put("entry_long", userLong);
             }
 
             DateTimeFormatter date_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -254,8 +255,6 @@ public class CreateJournalEntry extends AppCompatActivity {
                         userLat = defaultLocation.latitude;
                         userLong = defaultLocation.longitude;
                     }
-                    entryLocation.put("latitude", userLat);
-                    entryLocation.put("longitude", userLong);
                 }
             });
         }
