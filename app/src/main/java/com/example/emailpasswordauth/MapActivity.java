@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -103,6 +104,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         auth = FirebaseAuth.getInstance();
+
+        Button myGreatButton = findViewById(R.id.myGreatButton);
+        myGreatButton.setOnClickListener(view -> {
+            Log.d("point", markerLocations.toString());
+        });
     }
 
     private void updateLocationUI() {
@@ -208,6 +214,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         DocumentReference appUserDoc = appUsers.get(i).getReference(); // reference to all these user profs
 
                         //  **** Get all the individual entries within this users entries collection (TBD: where the location field exists)
+                        int finalI = i;
                         appUserDoc.collection("entries").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -231,6 +238,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     Log.d("bruh", "there is an error brudda");
                                     Log.d(TAG, "Error getting documents: ", task.getException());
                                 }
+                                if (finalI == appUsers.size() - 1) {
+                                    markersLoaded();
+                                }
                             }
 
                         });
@@ -243,8 +253,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Log.d("mama", markers.toString());
     }
 
-
-
+    public void markersLoaded() {
+        Log.d("MARKERS", markerLocations.toString());
+    }
 
     public void getEntryLocations() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -295,10 +306,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //           }
 
 
-
-
-
-
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
@@ -306,7 +313,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getDeviceLocation();
 
         getEntryLocations();
-        Log.d("point", markerLocations.toString());
+//        Log.d("point", markerLocations.toString());
 //        for(int k = 0; k < markers.size(); k++){
 //            googleMap.addMarker(new MarkerOptions()
 //                    .position(markers.get(k)));
@@ -315,8 +322,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //        .position(limerick).title("Limerick"));
 //        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(1), 15));
     }
-
-
 
 
     @Override
