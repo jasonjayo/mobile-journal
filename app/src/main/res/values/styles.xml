@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="NavigationButtonStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:tint">@color/white</item>
+        <item name="android:background">@drawable/navigation_button_background</item>
+    </style>
+
+    <style name="NavigationBarStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/navigation_bar_background</item>
+        <item name="android:elevation">8dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:clipChildren">false</item>
+        <item name="android:layout_margin">16dp</item>
+        <item name="android:layout_marginBottom">24dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:outlineSpotShadowColor">@color/black</item>
+    </style>
+</resources>
