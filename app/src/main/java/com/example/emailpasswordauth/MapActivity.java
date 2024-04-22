@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -255,6 +256,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void markersLoaded() {
         Log.d("MARKERS", markerLocations.toString());
+
+        for (int i = 0; i < markerLocations.size(); i++) {
+            Double lat = (Double) markerLocations.get(i).get(0);
+            Double lon = (Double) markerLocations.get(i).get(1);
+
+            LatLng marker = new LatLng(lat, lon);
+            markers.add(marker);
+
+        }
+        for (int k = 0; k < markers.size(); k++) {
+            Log.d("MARKER ADDING", "Adding marker to map " + markers.get(k).toString());
+            this.map.addMarker(new MarkerOptions().position((LatLng) markers.get(k)));
+        }
     }
 
     public void getEntryLocations() {
