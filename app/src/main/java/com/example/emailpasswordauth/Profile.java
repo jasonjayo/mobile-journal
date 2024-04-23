@@ -3,6 +3,7 @@ package com.example.emailpasswordauth;
 import static android.content.ContentValues.TAG;
 
 import static com.example.emailpasswordauth.Prompts.possiblePrompts;
+import static java.lang.Float.isNaN;
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
@@ -190,16 +191,14 @@ public class Profile extends Fragment {
                             {
 
                                 TextView caption = new TextView(getActivity().getApplicationContext());
-                                caption.setText(i + ":");
-                                RatingBar bar =  new RatingBar(getActivity().getApplicationContext());
-
                                 float soloRating = ( parseFloat(String.valueOf(totalRatingsCombined[v][0]))/ parseFloat(String.valueOf(totalRatingsCombined[v][1])));
-                                bar.setRating(soloRating);
+                                if (isNaN(soloRating)) {
+                                    soloRating = 0;
+                                }
+                                caption.setText(i + ":\t\t" + (soloRating*20) + "%\n");
                                 layout.addView(caption, layoutParams);
-                                layout.addView(bar, layoutParams);
-                                bar.setMax(5);
-                                bar.setNumStars(5);
-                                bar.setClickable(false);
+
+
                                 v++;
 
                             }
