@@ -68,6 +68,8 @@ public class CreateJournalEntry extends AppCompatActivity {
 
     private boolean mapShareEnabled;
 
+    private boolean hasPhoto = false;
+
     private void registerPicLauncher() {
         addPicLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
@@ -75,6 +77,7 @@ public class CreateJournalEntry extends AppCompatActivity {
                     ImageView imgView = findViewById(R.id.imageView);
                     imgView.setImageURI(null);
                     imgView.setImageURI(imageUri);
+                    hasPhoto = true;
                 }
         );
     }
@@ -92,7 +95,7 @@ public class CreateJournalEntry extends AppCompatActivity {
         addPicBtn.setOnClickListener(view -> {
             openCam();
         });
- // adding this for getting users location..
+        // adding this for getting users location..
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -167,15 +170,17 @@ entry.put("entry_long", userLong);
 
 
             // save file
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
-            StorageReference imageRef = storageRef.child(auth.getUid() + "/" + imageUri.getLastPathSegment());
-            UploadTask uploadTask = imageRef.putFile(imageUri);
-            uploadTask.addOnFailureListener(exception -> {
-                Toast.makeText(CreateJournalEntry.this, "Failed to upload photo " + exception, Toast.LENGTH_SHORT).show();
-            }).addOnSuccessListener(taskSnapshot -> {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-            });
+            if (hasPhoto) {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference();
+                StorageReference imageRef = storageRef.child(auth.getUid() + "/" + imageUri.getLastPathSegment());
+                UploadTask uploadTask = imageRef.putFile(imageUri);
+                uploadTask.addOnFailureListener(exception -> {
+                    Toast.makeText(CreateJournalEntry.this, "Failed to upload photo " + exception, Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                });
+            }
 
             db.collection("journal_entries").document(auth.getUid()).collection("entries").document(today.format(date_formatter))
                     .set(entry)
@@ -192,6 +197,7 @@ entry.put("entry_long", userLong);
                         public void onFailure(@NonNull Exception e) {
                             Toast.makeText(CreateJournalEntry.this, "Failed to create journal entry " + e,
                                     Toast.LENGTH_SHORT).show();
+                            Log.d("ENTRY FAIL", e.toString());
                         }
                     });
         });
@@ -280,7 +286,8 @@ entry.put("entry_long", userLong);
         }
 
     }
-    public void mapShareToggle(View v){
+
+    public void mapShareToggle(View v) {
         CheckBox mapCheckBox = findViewById(R.id.checkBox);
         // Adding entry to map
         // if box is checked and permission granted we get users location
@@ -294,7 +301,7 @@ entry.put("entry_long", userLong);
         }
 
 
-        }
+    }
 
 
 
