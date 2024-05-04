@@ -6,18 +6,29 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.media.ExifInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 
@@ -33,7 +44,12 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,10 +96,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List<DocumentSnapshot> appUserEntries;
     CollectionReference allAppUsers = db.collection("journal_entries");
 
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageRef = storage.getReference();
 
     ArrayList<ArrayList> markerLocations = new ArrayList<>();
 
-    ArrayList<Object> markers = new ArrayList<>();
+    ArrayList<LatLng> markers = new ArrayList<>();
+
+    ArrayList<entryInfo> entryMarkers = new ArrayList<>();
+    public class entryInfo {
+        public Double entryLat;
+        public Double entryLong;
+        public String entryTitle;
+        public String entryContent;
+
+        public Bitmap entryImage;
+
+        public entryInfo(Double latitude, Double longitude, String id, String content, Bitmap img) {
+            this.entryLat = latitude;
+            this.entryLong = longitude;
+            this.entryTitle = id;
+            this.entryContent = content;
+            this.entryImage = img;
+        }
+
+    }
+    Bitmap Image;
+
 
 
     @Override
@@ -211,6 +250,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     appUsers = new ArrayList<>();
                     appUsers.addAll(documents);
                     for (int i = 0; i < appUsers.size(); i++) {
+                        String currentId = appUsers.get(i).getId();
                         Log.d("userIds", appUsers.get(i).getId()); // will show all ids of users
                         DocumentReference appUserDoc = appUsers.get(i).getReference(); // reference to all these user profs
 
@@ -226,17 +266,49 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     appUserEntries.addAll(documents2);
                                     for (int i = 0; i < appUserEntries.size(); i++) {
                                         if (appUserEntries.get(i).contains("entry_lat")) {
-                                            Log.d("entryIds", appUserEntries.get(i).getId() + " " + appUserEntries.get(i).get("entry_lat"));
-                                            ArrayList<Double> userCoords = new ArrayList<Double>();
-                                            userCoords.add((Double) appUserEntries.get(i).get("entry_lat"));
-                                            userCoords.add((Double) appUserEntries.get(i).get("entry_long"));
-                                            markerLocations.add(userCoords);
-                                        }
-                                        Log.d("mate", markerLocations.toString());
+                                            //Log.d("entryIds", appUserEntries.get(i).getId() + " " + appUserEntries.get(i).get("entry_lat"));
+                                            if(storageRef.getBucket().contains(currentId)){
+                                            StorageReference imageRef = storageRef.child(currentId + "/" + appUserEntries.get(i).getId() + ".jpg");
+                                            Log.d("imageRef", imageRef.toString());
 
+
+//                                            StorageReference userStorage = storageRef.child(currentId + "/");
+                                            try {
+                                                File localFile = File.createTempFile("images", "jpg");
+                                                imageRef.getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
+                                                        Image = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                                                    }
+                                                }).addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Toast.makeText(MapActivity.this, "failed to retrieve", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            } catch (IOException e) {
+                                                Toast.makeText(getApplicationContext(), "error here" + e, Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                            Image = null;
+//                                            ArrayList<Double> userCoords = new ArrayList<Double>();
+//                                            userCoords.add((Double) appUserEntries.get(i).get("entry_lat"));
+//                                            userCoords.add((Double) appUserEntries.get(i).get("entry_long"));
+//                                            markerLocations.add(userCoords);
+                                                        entryInfo info = new entryInfo(
+                                                                (Double) appUserEntries.get(i).get("entry_lat"),
+                                                                (Double) appUserEntries.get(i).get("entry_long"),
+                                                                appUserEntries.get(i).getId(),
+                                                                (String) appUserEntries.get(i).get("content"),
+                                                               Image
+
+                                                        );
+                                       Log.d("krabs", info.entryContent);
+                                       entryMarkers.add(info);
+
+                                        }
                                     }
                                 } else {
-                                    Log.d("bruh", "there is an error brudda");
                                     Log.d(TAG, "Error getting documents: ", task.getException());
                                 }
                                 if (finalI == appUsers.size() - 1) {
@@ -251,73 +323,66 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         });
-        Log.d("mama", markers.toString());
     }
 
     public void markersLoaded() {
-        Log.d("MARKERS", markerLocations.toString());
+//        Log.d("MARKERS", markerLocations.toString());
+        for (int i = 0; i < entryMarkers.size(); i++) {
+            if(Image != null) {
+                this.map.addMarker(new MarkerOptions()
+                        .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
+                        .title(entryMarkers.get(i).entryTitle)
+                        .snippet(entryMarkers.get(i).entryContent)
+                        .icon(BitmapDescriptorFactory.fromBitmap(entryMarkers.get(i).entryImage))
+                );
+            } else {
+                this.map.addMarker(new MarkerOptions()
+                        .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
+                        .title(entryMarkers.get(i).entryTitle)
+                        .snippet(entryMarkers.get(i).entryContent)
 
-        for (int i = 0; i < markerLocations.size(); i++) {
-            Double lat = (Double) markerLocations.get(i).get(0);
-            Double lon = (Double) markerLocations.get(i).get(1);
+                );
+            }
 
-            LatLng marker = new LatLng(lat, lon);
-            markers.add(marker);
+            if (i == 0) {
+                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong), 15));
+            }
 
-        }
-        for (int k = 0; k < markers.size(); k++) {
-            Log.d("MARKER ADDING", "Adding marker to map " + markers.get(k).toString());
-            this.map.addMarker(new MarkerOptions().position((LatLng) markers.get(k)));
+//        for (int i = 0; i < markerLocations.size(); i++) {
+//            Double lat = (Double) markerLocations.get(i).get(0);
+//            Double lon = (Double) markerLocations.get(i).get(1);
+//
+//            LatLng marker = new LatLng(lat, lon);
+//            markers.add(marker);
+//
+//        }
+//        for (int k = 0; k < markers.size(); k++) {
+//            Log.d("MARKER ADDING", "Adding marker to map " + markers.get(k).toString());
+//            this.map.addMarker(new MarkerOptions()
+//                    .position((LatLng) markers.get(k)).title("bro").snippet("hello there")
+//                    );
+//
+//            if (k == 0) {
+//                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(k), 15));
+//                // only want the most recent ten markers
+//            }
+//        }
         }
     }
-
     public void getEntryLocations() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Getting all the user's who are on the App
-//                journalEntries.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    List<DocumentSnapshot> documents = task.getResult().getDocuments();
-//                    dataList = new ArrayList<>();
-//                    dataList.addAll(documents);
-//                   for (int i = 0; i < dataList.size(); i++){
-//                       Log.d("gettingDocs", dataList.get(i).getId());
-//                       // Gettings all the app user's entries.
-//                       db.collection("journal_entries").document( dataList.get(i).getId()).collection("entries")
-//                   }
-////                    for (QueryDocumentSnapshot document : task.getResult()) {
-////                        Log.d("gettingDocs", document.getId());
-////                    }
-//                } else {
-//                    Log.d(TAG, "Error getting documents: ", task.getException());
-//                }
-//            }
-//        });
-
-        // *** Problem here is that I am not authorised to view anyone else's journal entries, only my own, so cant access the location of anyone else's entries :(.
         getAllAppUsersLocations();
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        ArrayList<LatLng> markers = new ArrayList<>();
         //LatLng limerick = new LatLng(52.661252,-8.6301239 );
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         this.map = googleMap;
-        Log.d("point", markerLocations.toString());
-//        for (int i = 0; i < markerLocations.size(); i++) {
+        this.map.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapActivity.this));
 
 
-//            for (int j = 0; j < markerLocations.get(i).size();){
-//            }
-//                Double lat = (Double) markerLocations.get(i).get(j);
-//                Double lon = (Double) markerLocations.get(i).get(j++);
-//
-//                LatLng marker = new LatLng(lat, lon);
-//                markers.add(marker);
-//           }
+//        this.map.setOnMarkerClickListener(this);
 
 
         // Turn on the My Location layer and the related control on the map.
@@ -335,6 +400,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // googleMap.addMarker(new MarkerOptions()
         //        .position(limerick).title("Limerick"));
 //        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(1), 15));
+
     }
 
 
@@ -343,4 +409,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onPointerCaptureChanged(hasCapture);
     }
 
+
+
+
+//    @Override
+//    public boolean onMarkerClick(@NonNull Marker marker) {
+//        Toast.makeText(this, "My Position" + marker.getPosition(), Toast.LENGTH_SHORT).show();
+//        return false;
+//    }
 }
