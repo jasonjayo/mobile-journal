@@ -54,10 +54,12 @@ public class MainActivity extends AppCompatActivity {
     private void signIn(String email, String password) {
 
 
+        System.out.println("starting sign in");
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        System.out.println("finished sign in");
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = auth.getCurrentUser();
