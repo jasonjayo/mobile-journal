@@ -8,8 +8,10 @@ import androidx.core.content.ContextCompat;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.location.Location;
 import android.media.ExifInterface;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -46,12 +48,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -104,6 +109,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     ArrayList<LatLng> markers = new ArrayList<>();
 
     ArrayList<entryInfo> entryMarkers = new ArrayList<>();
+
     public class entryInfo {
         public Double entryLat;
         public Double entryLong;
@@ -121,8 +127,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
     }
-    Bitmap Image;
 
+    Bitmap Image;
 
 
     @Override
@@ -264,56 +270,143 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     List<DocumentSnapshot> documents2 = task.getResult().getDocuments();
                                     appUserEntries = new ArrayList<>();
                                     appUserEntries.addAll(documents2);
-                                    for (int i = 0; i < appUserEntries.size(); i++) {
-                                        if (appUserEntries.get(i).contains("entry_lat")) {
-                                            //Log.d("entryIds", appUserEntries.get(i).getId() + " " + appUserEntries.get(i).get("entry_lat"));
-                                            if(storageRef.getBucket().contains(currentId)){
-                                            StorageReference imageRef = storageRef.child(currentId + "/" + appUserEntries.get(i).getId() + ".jpg");
+                                    for (int j = 0; j < appUserEntries.size(); j++) {
+
+
+                                        if (appUserEntries.get(j).contains("entry_lat")) {
+
+                                            StorageReference imageRef = storageRef.child(currentId + "/" + appUserEntries.get(j).getId() + ".jpg");
                                             Log.d("imageRef", imageRef.toString());
 
-
-//                                            StorageReference userStorage = storageRef.child(currentId + "/");
                                             try {
                                                 File localFile = File.createTempFile("images", "jpg");
+                                                int finalJ = j;
+                                                DocumentSnapshot userEntry = appUserEntries.get(j);
+                                                int userEntriesLength = appUserEntries.size();
                                                 imageRef.getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
+                                                        System.out.println("FILE EXISTS for final j " + finalJ);
                                                         Image = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                                                        if (Image != null) {
+
+                                                            // scale image and maintain aspect ratio
+                                                            double ratio = Image.getWidth() / 200.0;
+                                                            int newHeight = (int) (Image.getHeight() / ratio);
+                                                            Image = Bitmap.createScaledBitmap(Image, 200, newHeight, false);
+
+                                                            // fix rotation
+                                                            ExifInterface exif = null;
+                                                            try {
+                                                                exif = new ExifInterface(localFile);
+
+                                                                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                                                                Matrix matrix = new Matrix();
+                                                                switch (orientation) {
+                                                                    case ExifInterface.ORIENTATION_ROTATE_90:
+                                                                        matrix.postRotate(90);
+                                                                        break;
+                                                                    case ExifInterface.ORIENTATION_ROTATE_180:
+                                                                        matrix.postRotate(180);
+                                                                        break;
+                                                                    case ExifInterface.ORIENTATION_ROTATE_270:
+                                                                        matrix.postRotate(270);
+                                                                        break;
+                                                                }
+                                                                Image = Bitmap.createBitmap(Image, 0, 0, Image.getWidth(), Image.getHeight(), matrix, true);
+                                                            } catch (IOException e) {
+//                                                                throw new RuntimeException(e);
+                                                            }
+
+
+                                                        }
+//                                                        System.out.println("LAT LONG EARLY: " + appUserEntries.get(finalJ));
+                                                        System.out.println("CONTENT: " + userEntry.get("content"));
+                                                        entryInfo info = new entryInfo(
+                                                                (Double) userEntry.get("entry_lat"),
+                                                                (Double) userEntry.get("entry_long"),
+                                                                userEntry.getId(),
+                                                                (String) userEntry.get("content"),
+                                                                Image
+
+                                                        );
+                                                        Log.d("krabs", info.entryContent);
+                                                        entryMarkers.add(info);
+
+                                                        if (Image != null) {
+                                                            map.addMarker(new MarkerOptions()
+                                                                    .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
+                                                                    .title(userEntry.getId())
+                                                                    .snippet((String) userEntry.get("content"))
+                                                                    .icon(BitmapDescriptorFactory.fromBitmap(Image))
+                                                            );
+                                                        } else {
+                                                            map.addMarker(new MarkerOptions()
+                                                                    .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
+                                                                    .title(userEntry.getId())
+                                                                    .snippet((String) userEntry.get("content"))
+                                                            );
+                                                        }
+
+
+                                                        if ((finalI == appUsers.size() - 1) && (finalJ == userEntriesLength - 1)) {
+//                                                            markersLoaded();
+                                                        }
+//                                                        count--;
+//                                                        if (count == 0) {
+//                                                            markersLoaded();
+//                                                        }
                                                     }
                                                 }).addOnFailureListener(new OnFailureListener() {
                                                     @Override
                                                     public void onFailure(@NonNull Exception e) {
-                                                        Toast.makeText(MapActivity.this, "failed to retrieve", Toast.LENGTH_SHORT).show();
+                                                        System.out.println("FILE NOT EXISTS for final j " + finalJ);
+//                                                        Toast.makeText(MapActivity.this, "failed to retrieve", Toast.LENGTH_SHORT).show();
+
+                                                        entryInfo info = new entryInfo(
+                                                                (Double) userEntry.get("entry_lat"),
+                                                                (Double) userEntry.get("entry_long"),
+                                                                userEntry.getId(),
+                                                                (String) userEntry.get("content"),
+                                                                null
+
+                                                        );
+                                                        Log.d("krabs", info.entryContent);
+                                                        entryMarkers.add(info);
+
+                                                        map.addMarker(new MarkerOptions()
+                                                                .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
+                                                                .title(userEntry.getId())
+                                                                .snippet((String) userEntry.get("content"))
+                                                        );
+
+//                                                        if ((finalI == appUsers.size() - 1) && (finalJ == userEntriesLength - 1)) {
+//                                                            markersLoaded();
+//                                                        }
+//                                                        count--;
+//                                                        if (count == 0) {
+//                                                            markersLoaded();
+//                                                        }
                                                     }
                                                 });
                                             } catch (IOException e) {
                                                 Toast.makeText(getApplicationContext(), "error here" + e, Toast.LENGTH_SHORT).show();
                                             }
-                                        }
-                                            Image = null;
+//                                            }
+//                                            Image = null;
 //                                            ArrayList<Double> userCoords = new ArrayList<Double>();
 //                                            userCoords.add((Double) appUserEntries.get(i).get("entry_lat"));
 //                                            userCoords.add((Double) appUserEntries.get(i).get("entry_long"));
 //                                            markerLocations.add(userCoords);
-                                                        entryInfo info = new entryInfo(
-                                                                (Double) appUserEntries.get(i).get("entry_lat"),
-                                                                (Double) appUserEntries.get(i).get("entry_long"),
-                                                                appUserEntries.get(i).getId(),
-                                                                (String) appUserEntries.get(i).get("content"),
-                                                               Image
 
-                                                        );
-                                       Log.d("krabs", info.entryContent);
-                                       entryMarkers.add(info);
 
                                         }
                                     }
                                 } else {
                                     Log.d(TAG, "Error getting documents: ", task.getException());
                                 }
-                                if (finalI == appUsers.size() - 1) {
-                                    markersLoaded();
-                                }
+
                             }
 
                         });
@@ -325,28 +418,45 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
+
     public void markersLoaded() {
+        System.out.println("============ MARKERS LOADED ============");
 //        Log.d("MARKERS", markerLocations.toString());
+        System.out.println("Markers length " + entryMarkers.size());
         for (int i = 0; i < entryMarkers.size(); i++) {
-            if(Image != null) {
+
+            System.out.println("i is " + i);
+
+            System.out.println("LAT LONG: " + entryMarkers.get(i).entryLat + " " + entryMarkers.get(i).entryLong);
+
+
+//            System.out.println("IMAGE " + entryMarkers.get(i).entryImage);
+            if (entryMarkers.get(i).entryImage != null) {
+                System.out.println("HAS IMAGE");
                 this.map.addMarker(new MarkerOptions()
-                        .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
-                        .title(entryMarkers.get(i).entryTitle)
-                        .snippet(entryMarkers.get(i).entryContent)
-                        .icon(BitmapDescriptorFactory.fromBitmap(entryMarkers.get(i).entryImage))
+                                .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
+                                .title(entryMarkers.get(i).entryTitle)
+                                .snippet(entryMarkers.get(i).entryContent)
+//                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                                .icon(BitmapDescriptorFactory.fromBitmap(entryMarkers.get(i).entryImage))
                 );
             } else {
+                System.out.println("DOESNT HAVE IMAGE");
+//                this.map.addMarker(new MarkerOptions()
+//                                .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
+                System.out.println(this.map);
                 this.map.addMarker(new MarkerOptions()
                         .position(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong))
                         .title(entryMarkers.get(i).entryTitle)
                         .snippet(entryMarkers.get(i).entryContent)
 
                 );
+                System.out.println("DOESNT HAVE IMAGE ADDED");
             }
 
-            if (i == 0) {
-                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong), 15));
-            }
+//            if (i == 0) {
+//                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong), 15));
+//            }
 
 //        for (int i = 0; i < markerLocations.size(); i++) {
 //            Double lat = (Double) markerLocations.get(i).get(0);
@@ -367,10 +477,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                // only want the most recent ten markers
 //            }
 //        }
+
+            System.out.println("MARKERS PRINTING FINISHED " + i);
         }
     }
+
     public void getEntryLocations() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         getAllAppUsersLocations();
     }
 
@@ -378,6 +490,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         //LatLng limerick = new LatLng(52.661252,-8.6301239 );
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
         this.map = googleMap;
         this.map.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapActivity.this));
 
@@ -408,8 +521,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
-
-
 
 
 //    @Override
