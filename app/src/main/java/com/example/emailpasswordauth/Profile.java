@@ -7,6 +7,7 @@ import static java.lang.Float.isNaN;
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +34,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import org.w3c.dom.Text;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -56,6 +60,7 @@ public class Profile extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
     public Profile() {
         // Required empty public constructor
     }
@@ -94,6 +99,7 @@ public class Profile extends Fragment {
 
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -187,15 +193,14 @@ public class Profile extends Fragment {
                             float rating = (float) totalRatings / documents.size();
                             avgRating.setRating(rating);
                             v = 0; //reuse v for iteration
-                            for (String i : possiblePrompts.values())
-                            {
+                            for (String i : possiblePrompts.values()) {
 
                                 TextView caption = new TextView(getActivity().getApplicationContext());
-                                float soloRating = ( parseFloat(String.valueOf(totalRatingsCombined[v][0]))/ parseFloat(String.valueOf(totalRatingsCombined[v][1])));
+                                float soloRating = (parseFloat(String.valueOf(totalRatingsCombined[v][0])) / parseFloat(String.valueOf(totalRatingsCombined[v][1])));
                                 if (isNaN(soloRating)) {
                                     soloRating = 0;
                                 }
-                                caption.setText(i + ":\t\t" + (soloRating*20) + "%\n");
+                                caption.setText(Html.fromHtml(i + ":\t\t<br><b>" + Math.round(soloRating * 20) + "%</b><br>"));
                                 layout.addView(caption, layoutParams);
 
 
@@ -208,16 +213,27 @@ public class Profile extends Fragment {
                         }
                     }
 
+                    @SuppressLint("SetTextI18n")
                     private void DrawMoodAverages(float happyCount, List<DocumentSnapshot> documents, float neutralCount, float sadCount) {
                         ImageButton sadButton = getView().findViewById(R.id.sentimentSad2);
                         ImageButton neutralButton = getView().findViewById(R.id.sentimentNeutral2);
                         ImageButton happyButton = getView().findViewById(R.id.sentimentHappy2);
+
+                        TextView sadPercent = getView().findViewById(R.id.sadPercent);
+                        TextView neutralPercent = getView().findViewById(R.id.neutralPercent);
+                        TextView happyPercent = getView().findViewById(R.id.happyPercent);
+
                         float happy = happyCount / documents.size();
                         float neutral = neutralCount / documents.size();
                         float sad = sadCount / documents.size();
-                        happyButton.setImageAlpha((int)(happy * 255));
-                        neutralButton.setImageAlpha((int)(neutral * 255));
-                        sadButton.setImageAlpha((int)(sad * 255));
+
+                        happyButton.setAlpha(happy);
+                        neutralButton.setAlpha(neutral);
+                        sadButton.setAlpha(sad);
+
+                        sadPercent.setText(Math.round(sad * 100) + "%");
+                        neutralPercent.setText(Math.round(neutral * 100) + "%");
+                        happyPercent.setText(Math.round(happy * 100) + "%");
                     }
                 });
     }

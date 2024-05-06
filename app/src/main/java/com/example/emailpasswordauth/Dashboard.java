@@ -156,35 +156,35 @@ public class Dashboard extends Fragment {
                 });
 
         // send test notification
-        Button notif_btn = getView().findViewById(R.id.notif_btn);
-        notif_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getContext(), Dashboard.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-                // intent here does nothing
-
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), "MY_CHANNEL")
-                        .setSmallIcon(R.drawable.baseline_sentiment_satisfied_alt_24)
-                        .setContentTitle("Test Notification")
-                        .setContentText("Time to rate")
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        // Set the intent that fires when the user taps the notification.
-                        .setContentIntent(pendingIntent)
-                        .setAutoCancel(true);
-
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getContext());
-                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-
-                // notificationId is a unique int for each notification that you must define.
-                notificationManager.notify(123, builder.build());
-
-            }
-        });
+//        Button notif_btn = getView().findViewById(R.id.notif_btn);
+//        notif_btn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(getContext(), Dashboard.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+//
+//                // intent here does nothing
+//
+//                NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), "MY_CHANNEL")
+//                        .setSmallIcon(R.drawable.baseline_sentiment_satisfied_alt_24)
+//                        .setContentTitle("Test Notification")
+//                        .setContentText("Time to rate")
+//                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                        // Set the intent that fires when the user taps the notification.
+//                        .setContentIntent(pendingIntent)
+//                        .setAutoCancel(true);
+//
+//                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getContext());
+//                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//                    return;
+//                }
+//
+//                // notificationId is a unique int for each notification that you must define.
+//                notificationManager.notify(123, builder.build());
+//
+//            }
+//        });
 
     }
 

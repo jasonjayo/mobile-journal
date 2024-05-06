@@ -11,74 +11,71 @@
         android:id="@+id/welcomeMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="61dp"
-        android:layout_marginBottom="1dp"
+        android:layout_marginTop="12dp"
         android:text="Welcome back!"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/userEmail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
 
     <TextView
         android:id="@+id/userEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:text="email"
-        app:layout_constraintBottom_toTopOf="@+id/new_entry_btn"
-        app:layout_constraintEnd_toEndOf="@+id/welcomeMessage"
-        app:layout_constraintStart_toStartOf="@+id/welcomeMessage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/welcomeMessage" />
 
     <Button
         android:id="@+id/new_entry_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="9dp"
+        android:layout_marginTop="17dp"
         android:text="New Entry"
         app:icon="@android:drawable/ic_menu_add"
-        app:layout_constraintBottom_toTopOf="@+id/notif_btn"
-        app:layout_constraintEnd_toEndOf="@+id/notif_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userEmail" />
-
-    <Button
-        android:id="@+id/notif_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginBottom="41dp"
-        android:text="Send Notification"
-        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
-        app:layout_constraintStart_toStartOf="@+id/welcomeMessage"
-        app:layout_constraintTop_toBottomOf="@+id/new_entry_btn" />
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="340dp"
-        android:layout_height="239dp"
-        android:layout_marginBottom="34dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="337dp"
+        android:layout_height="340dp"
+        android:layout_marginTop="60dp"
+        android:padding="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/notif_btn">
+        app:layout_constraintTop_toBottomOf="@+id/new_entry_btn">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="0dp" />
     </ScrollView>
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="77dp"
-        android:layout_height="80dp"
+        android:layout_width="112dp"
+        android:layout_height="96dp"
+        android:layout_marginTop="16dp"
         android:src="@drawable/journal_app_logo"
-        app:layout_constraintBottom_toTopOf="@+id/welcomeMessage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Your Entries"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_entry_btn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
