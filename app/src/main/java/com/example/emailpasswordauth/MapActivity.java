@@ -1,3 +1,4 @@
+
 package com.example.emailpasswordauth;
 
 import androidx.annotation.NonNull;
@@ -194,6 +195,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(lastKnownLocation.getLatitude(),
                                                 lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                map.setMyLocationEnabled(true);
+                                map.getUiSettings().setMyLocationButtonEnabled(true);
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
@@ -260,13 +263,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         Log.d("userIds", appUsers.get(i).getId()); // will show all ids of users
                         DocumentReference appUserDoc = appUsers.get(i).getReference(); // reference to all these user profs
 
-                        //  **** Get all the individual entries within this users entries collection (TBD: where the location field exists)
+                        //  **** Get all the individual entries within this users entries collection
                         int finalI = i;
                         appUserDoc.collection("entries").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d("goodjob", " this worked bro");
+                                    Log.d("goodjob", " this worked ");
                                     List<DocumentSnapshot> documents2 = task.getResult().getDocuments();
                                     appUserEntries = new ArrayList<>();
                                     appUserEntries.addAll(documents2);
