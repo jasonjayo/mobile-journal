@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +35,16 @@ public class RegisterActivity extends AppCompatActivity {
             EditText passwordInput = findViewById(R.id.editTextTextPassword);
             String password = passwordInput.getText().toString();
             String confirmPassword = ((EditText) findViewById(R.id.editTextTextConfirmPassword)).getText().toString();
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(RegisterActivity.this, "Please fill in all fields.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(RegisterActivity.this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             if (!password.equals(confirmPassword)) {
                 Toast.makeText(RegisterActivity.this, "Passwords do not match.", Toast.LENGTH_SHORT).show();
