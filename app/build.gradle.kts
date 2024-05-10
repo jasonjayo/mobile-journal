@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.emailpasswordauth"
+        applicationId = "com.jot.journal"
         minSdk = 34
         targetSdk = 34
         versionCode = 1
