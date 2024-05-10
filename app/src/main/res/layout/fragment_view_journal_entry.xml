@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="34dp"
-        android:text="Day"
+        android:text="April 19th, 2024"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,74 +21,48 @@
 
     <TextView
         android:id="@+id/entry_content"
-        android:layout_width="wrap_content"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="220dp"
-        android:text="Content"
+        android:layout_marginTop="10dp"
+        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla consequat rhoncus efficitur. Pellentesque pulvinar nulla ac semper vestibulum. Donec id tortor scelerisque enim accumsan vehicula at et nunc. Integer eleifend scelerisque augue nec luctus. Praesent dictum porta porta. Sed id ex nisi. Maecenas ligula nisl, lobortis in quam et, viverra sodales lorem. Sed eu massa ac ex convallis lacinia. In pulvinar, turpis quis facilisis laoreet, massa eros luctus nisl, quis laoreet ipsum lorem eget metus. Nulla ac nunc at mauris dictum consectetur quis non sapien. Aliquam lacinia leo eu lacus viverra, vitae tempor neque lacinia. Vestibulum ac placerat dolor. Sed vitae erat in metus vehicula imperdiet. Duis tellus diam, ultricies quis efficitur sed, imperdiet eu augue. Integer quam nulla, facilisis dapibus hendrerit eget, mollis ultricies libero. Cras eget vestibulum enim, id tempus ipsum."
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day" />
+        app:layout_constraintTop_toBottomOf="@+id/materialDivider3" />
 
     <TextView
         android:id="@+id/prompt_val"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="164dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="1dp"
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day" />
+        app:layout_constraintTop_toBottomOf="@+id/prompt_key" />
 
     <ImageView
         android:id="@+id/viewEntryImage"
         android:layout_width="347dp"
         android:layout_height="269dp"
-        android:layout_marginTop="384dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/backgrounds/scenic" />
 
     <TextView
         android:id="@+id/prompt_key"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="136dp"
+        android:layout_marginTop="20dp"
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day" />
-
-    <ImageView
-        android:id="@+id/Neutral"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="17dp"
-        android:src="@drawable/baseline_sentiment_neutral_24"
-        app:layout_constraintBottom_toTopOf="@+id/prompt_key"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <ImageView
-        android:id="@+id/Happy"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="17dp"
-        android:src="@drawable/baseline_sentiment_satisfied_alt_24"
-        app:layout_constraintBottom_toTopOf="@+id/prompt_key"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day"
-        app:layout_constraintVertical_bias="0.0"
-        app:tint="#07FB11" />
+        app:layout_constraintTop_toBottomOf="@+id/FeelingText" />
 
     <ImageView
         android:id="@+id/Sad"
@@ -99,31 +73,70 @@
         android:src="@drawable/baseline_sentiment_very_dissatisfied_24"
         app:layout_constraintBottom_toTopOf="@+id/prompt_key"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.72"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/day"
+        app:layout_constraintVertical_bias="0.083"
+        app:tint="#FFC107" />
+
+    <ImageView
+        android:id="@+id/Neutral"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="17dp"
+        android:layout_marginBottom="68dp"
+        android:src="@drawable/baseline_sentiment_neutral_24"
+        android:tint="#03A9F4"
+        app:layout_constraintBottom_toTopOf="@+id/materialDivider3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.72"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/day" />
+
+    <ImageView
+        android:id="@+id/Happy"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="17dp"
+        android:layout_marginBottom="17dp"
+        android:src="@drawable/baseline_sentiment_satisfied_alt_24"
+        app:layout_constraintBottom_toTopOf="@+id/prompt_key"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/day"
         app:layout_constraintVertical_bias="0.0"
-        app:tint="#078DF8" />
-
-    <ImageView
-        android:id="@+id/imageView3"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="15dp"
-        android:src="@drawable/journal_app_logo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:tint="#07FB11" />
 
     <TextView
         android:id="@+id/FeelingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="35dp"
-        android:text="TextView"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="28dp"
+        android:text="You were feeling"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintBottom_toTopOf="@+id/prompt_key"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/day" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="80dp"
+        android:layout_height="71dp"
+        android:layout_marginBottom="5dp"
+        android:src="@drawable/journal_app_logo"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/materialDivider3"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="19dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/prompt_val" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

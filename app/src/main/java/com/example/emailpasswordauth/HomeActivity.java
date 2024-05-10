@@ -3,6 +3,7 @@ package com.example.emailpasswordauth;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,24 +31,29 @@ public class HomeActivity extends AppCompatActivity {
 
         createNotificationChannel();
         scheduleFixedNotifications();
+        // temp
+        sendNotification("☁ Time to Reflect");
     }
+
     // Creating the the notification channel
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "TEST_CHANNEL";
-            String description = "Test Channel";
+            CharSequence name = "Reminders";
+            String description = "Reminders";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel("MY_CHANNEL", name, importance);
+            NotificationChannel channel = new NotificationChannel("Reminders", name, importance);
             channel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
     }
+
     // Scheduling fixed notifications using scheduleNotificationAt method
     private void scheduleFixedNotifications() {
         scheduleNotificationAt(10, 0, "Good morning!");
         scheduleNotificationAt(16, 0, "Don't forget about us!");
     }
+
     // Scheduling notifications at a specific time we want
     private void scheduleNotificationAt(int hour, int minute, String title) {
 
@@ -71,6 +77,7 @@ public class HomeActivity extends AppCompatActivity {
             scheduleFixedNotifications();
         }, delay);
     }
+
     // Method to send a notification with random prompt
     private void sendNotification(String title) {
         // Randomly select a question
@@ -83,25 +90,33 @@ public class HomeActivity extends AppCompatActivity {
             content = questions[random.nextInt(questions.length)];
         }
 
+        // create intent for notification to launch new journal entry activity
+        Intent newEntryIntent = new Intent(this, CreateJournalEntry.class);
+        PendingIntent pendingNewEntryIntent = PendingIntent.getActivity(this, 0, newEntryIntent, PendingIntent.FLAG_IMMUTABLE);
+
         // Build and display the notification
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         Notification.Builder builder = new Notification.Builder(this, "MY_CHANNEL")
                 .setSmallIcon(R.drawable.journal_app_logo)
                 .setContentTitle(title)
                 .setContentText(content)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setContentIntent(pendingNewEntryIntent);
         notificationManager.notify(0, builder.build());
     }
+
     // Method to open profile fragment
     public void openProfile(View view) {
         NavController navController = Navigation.findNavController(this, R.id.fragmentContainerView2);
         navController.navigate(R.id.profile);
     }
+
     // Method to open dashboard fragment
     public void openDashboard(View view) {
         NavController navController = Navigation.findNavController(this, R.id.fragmentContainerView2);
         navController.navigate(R.id.dashboard);
     }
+
     // Method to open map activity
     public void openMap(View v) {
         Intent i = new Intent(this, MapActivity.class);

@@ -26,25 +26,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Button registerLink = findViewById(R.id.loginLink);
-        registerLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
-            }
-        });
+        registerLink.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, RegisterActivity.class)));
 
         Button signInButton = findViewById(R.id.signUpButton);
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                EditText emailInput = findViewById(R.id.editTextTextEmailAddress);
-                String email = emailInput.getText().toString();
-                EditText passwordInput = findViewById(R.id.editTextTextPassword);
-                String password = passwordInput.getText().toString();
+        signInButton.setOnClickListener(v -> {
+            // get entered email and password and pass to signIn method
+            EditText emailInput = findViewById(R.id.editTextTextEmailAddress);
+            String email = emailInput.getText().toString();
+            EditText passwordInput = findViewById(R.id.editTextTextPassword);
+            String password = passwordInput.getText().toString();
 
-                if (password.length() > 0) {
-                    signIn(email, password);
-                }
+            if (password.length() > 0) {
+                signIn(email, password);
             }
         });
 
@@ -52,9 +46,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signIn(String email, String password) {
-
-
-        System.out.println("starting sign in");
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override

@@ -152,15 +152,16 @@
         tools:layout_editor_absoluteX="0dp" />
 
     <ScrollView
-        android:layout_width="348dp"
-        android:layout_height="352dp"
+        android:layout_width="358dp"
+        android:layout_height="287dp"
         android:layout_marginStart="50dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sentimentNeutral2">
+        app:layout_constraintTop_toBottomOf="@+id/sentimentNeutral2"
+        app:layout_constraintVertical_bias="0.887">
 
         <LinearLayout
             android:id="@+id/ratingsLayout"
@@ -198,5 +199,20 @@
         android:text="33%"
         app:layout_constraintStart_toEndOf="@+id/neutralPercent"
         app:layout_constraintTop_toBottomOf="@+id/sentimentHappy2" />
+
+    <TextView
+        android:id="@+id/tipText"
+        android:layout_width="357dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="11dp"
+        android:background="#9C290430"
+        android:lineHeight="22dp"
+        android:paddingHorizontal="7dp"
+        android:paddingVertical="7dp"
+        android:text="Personalised Tip:\nYou're doing great, keep it up! 👍"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dividerRating2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

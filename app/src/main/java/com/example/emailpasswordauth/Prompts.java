@@ -9,16 +9,16 @@ public class Prompts {
 
     static {
         // Prompts
-        possiblePrompts.put("STRESS", "How are your stress levels?");
-        possiblePrompts.put("GRATEFUL", "How grateful are you?");
-        possiblePrompts.put("CALM", "How calm are you?");
-        possiblePrompts.put("HAPPY", "How happy do you feel?");
-        possiblePrompts.put("CONNECTED", "How connected do you feel to those around you?");
-        possiblePrompts.put("BALANCED", "How balanced is your life?");
-        possiblePrompts.put("INTERESTS", "How well are you making time to pursue your interests?");
-        possiblePrompts.put("GROUNDED", "How grounded do you feel in your daily life?");
-        possiblePrompts.put("CHALLENGES", "How well are you handling life's challenges?");
-        possiblePrompts.put("SATISFIED", "How satisfied does your lifestyle make you feel?");
+        possiblePrompts.put("STRESS", "How are your stress levels? \uD83D\uDE1F");
+        possiblePrompts.put("GRATEFUL", "How grateful are you? 😊");
+        possiblePrompts.put("CALM", "How calm are you? ☺");
+        possiblePrompts.put("HAPPY", "How happy do you feel? 😁");
+        possiblePrompts.put("CONNECTED", "How connected do you feel to those around you? \uD83E\uDD1D");
+        possiblePrompts.put("BALANCED", "How balanced is your life? ⚖");
+        possiblePrompts.put("INTERESTS", "How well are you making time to pursue your interests? 🎨");
+        possiblePrompts.put("GROUNDED", "How grounded do you feel in your daily life? 🌱");
+        possiblePrompts.put("CHALLENGES", "How well are you handling life's challenges? 🥊");
+        possiblePrompts.put("SATISFIED", "How satisfied does your lifestyle make you feel? 😅");
 
         // Notification Questions
         possibleQuestions.put("FEELING", "How are you feeling today?");

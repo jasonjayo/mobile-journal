@@ -26,67 +26,56 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-
+        // sign up button click
         Button signUpButton = findViewById(R.id.signUpButton);
-
         signUpButton.setOnClickListener(v -> {
+            // get email & password values
             EditText emailInput = findViewById(R.id.editTextTextEmailAddress);
             String email = emailInput.getText().toString();
             EditText passwordInput = findViewById(R.id.editTextTextPassword);
             String password = passwordInput.getText().toString();
             String confirmPassword = ((EditText) findViewById(R.id.editTextTextConfirmPassword)).getText().toString();
 
+            // validations for email and password
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(RegisterActivity.this, "Please fill in all fields.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 Toast.makeText(RegisterActivity.this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (!password.equals(confirmPassword)) {
                 Toast.makeText(RegisterActivity.this, "Passwords do not match.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (password.length() < 8) {
                 Toast.makeText(RegisterActivity.this, "Password must contain 8 or more characters.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            // all validations passed, so call signUp
             signUp(email, password);
         });
 
+        // back to login button, back to HomeActivity
         Button backToLogin = findViewById(R.id.loginLink);
-        backToLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        backToLogin.setOnClickListener(view -> finish());
 
         auth = FirebaseAuth.getInstance();
     }
 
     public void signUp(String email, String password) {
-        // TODO add here validation on email formatting and password (letters, numbers, symbol, min length 6)
-        // NOTE Firebase does some validation on its side, will fail if password < 6 chars, if email not in email format
         auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = auth.getCurrentUser();
-                            Toast.makeText(RegisterActivity.this, "Successfully registered!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
-                        } else {
-                            // If sign up fails, display a message to the user.
-                            Toast.makeText(RegisterActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, go to login page
+                        Toast.makeText(RegisterActivity.this, "Successfully registered!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+                    } else {
+                        // If sign up fails, display a message to the user.
+                        Toast.makeText(RegisterActivity.this, "Registration failed.",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }

@@ -46,63 +46,26 @@ import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link Dashboard#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class Dashboard extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private FirebaseAuth auth;
-
     ViewJournalEntryAdapter adapter;
-
     private RecyclerView recyclerView;
-
     private List<DocumentSnapshot> dataList;
 
     public Dashboard() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Dashboard.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Dashboard newInstance(String param1, String param2) {
-        Dashboard fragment = new Dashboard();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_dashboard, container, false);
     }
@@ -111,85 +74,64 @@ public class Dashboard extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView userEmail = getView().findViewById(R.id.userEmail);
         auth = FirebaseAuth.getInstance();
+
+        // display user's email
+        TextView userEmail = getView().findViewById(R.id.userEmail);
         userEmail.setText(auth.getCurrentUser().getEmail());
-        userEmail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bundle bundle = new Bundle();
-                bundle.putString("email", auth.getCurrentUser().getEmail());
-                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_profile, bundle);
-            }
+        // set email as shortcut to profile page
+        userEmail.setOnClickListener(view1 -> {
+            // using a bundle to pass data (email in this case) to the profile fragment
+            Bundle bundle = new Bundle();
+            bundle.putString("email", auth.getCurrentUser().getEmail());
+            Navigation.findNavController(view1).navigate(R.id.action_dashboard_to_profile, bundle);
         });
+
+        // set onclick listener for new entry btn to launch create journal activity
+        Button new_entry_btn = getView().findViewById(R.id.new_entry_btn);
+        new_entry_btn.setOnClickListener(view12 -> startActivity(new Intent(getActivity(), CreateJournalEntry.class)));
+
+        // load entries from Firestore
+        getEntriesList();
+    }
+
+    public void getEntriesList() {
+        // load entries from Firestore
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Button new_entry_btn = getView().findViewById(R.id.new_entry_btn);
-        new_entry_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(getActivity(), CreateJournalEntry.class));
-            }
-        });
-
-        db.collection("journal_entries").document(auth.getUid()).collection("entries")
+        // current user's entries are stored under journal_entries/<userId>/entries
+        db.collection("journal_entries")
+                .document(auth.getUid())
+                .collection("entries")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
-                            Collections.reverse(documents); // reversed so most recent first
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                        Collections.reverse(documents); // reversed so most recent is first
 
-                            recyclerView = getView().findViewById(R.id.recyclerView);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        /*
+                            we use a RecyclerView for the list of entries to improve performance.
+                            the list of entries could be quite long so RecyclerView is idea in this
+                            case as it reuses UI components after they've scrolled off screen.
+                         */
+                        recyclerView = getView().findViewById(R.id.recyclerView);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                            dataList = new ArrayList<>();
-                            dataList.addAll(documents);
+                        dataList = new ArrayList<>();
+                        dataList.addAll(documents);
 
-                            adapter = new ViewJournalEntryAdapter(getContext(), dataList);
-                            recyclerView.setAdapter(adapter);
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
+                        adapter = new ViewJournalEntryAdapter(getContext(), dataList);
+                        recyclerView.setAdapter(adapter);
+                    } else {
+                        Log.w(TAG, "Error getting documents.", task.getException());
                     }
                 });
-
-        // send test notification
-//        Button notif_btn = getView().findViewById(R.id.notif_btn);
-//        notif_btn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(getContext(), Dashboard.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
-//
-//                // intent here does nothing
-//
-//                NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), "MY_CHANNEL")
-//                        .setSmallIcon(R.drawable.baseline_sentiment_satisfied_alt_24)
-//                        .setContentTitle("Test Notification")
-//                        .setContentText("Time to rate")
-//                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                        // Set the intent that fires when the user taps the notification.
-//                        .setContentIntent(pendingIntent)
-//                        .setAutoCancel(true);
-//
-//                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getContext());
-//                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//                    return;
-//                }
-//
-//                // notificationId is a unique int for each notification that you must define.
-//                notificationManager.notify(123, builder.build());
-//
-//            }
-//        });
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        System.out.println("resuming");
+        getEntriesList();
     }
 }
