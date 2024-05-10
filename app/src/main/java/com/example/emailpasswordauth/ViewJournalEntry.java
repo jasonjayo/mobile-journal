@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -33,19 +34,8 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ViewJournalEntry#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class ViewJournalEntry extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private FirebaseAuth auth;
 
@@ -53,32 +43,9 @@ public class ViewJournalEntry extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ViewJournalEntry.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ViewJournalEntry newInstance(String param1, String param2) {
-        ViewJournalEntry fragment = new ViewJournalEntry();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
         auth = FirebaseAuth.getInstance();
     }
 
@@ -93,43 +60,45 @@ public class ViewJournalEntry extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // get info passed as bundle from Dashboard
+        // display title as date of this journal
         String day = getArguments().getString("day");
-        TextView text = view.findViewById(R.id.day);
+        TextView title = view.findViewById(R.id.day);
         LocalDate date = LocalDate.parse(day, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         DateTimeFormatter long_format = DateTimeFormatter.ofPattern("MMMM d, yyyy");
-        text.setText(date.format(long_format));
+        title.setText(date.format(long_format));
 
+        // display content
         String content = getArguments().getString("content");
         TextView contentTextView = view.findViewById(R.id.entry_content);
         contentTextView.setText(content);
 
         String sentiment = getArguments().getString("sentiment");
-        TextView sentimentTextView = view.findViewById(R.id.FeelingText);
-        sentimentTextView.setText("You were feeling " + sentiment + " today");
 
-        final float inactiveMoodBtnOpacity = 0.05f;
+        // show only the relevant sentiment, hide others
+        final float inactiveMoodBtnOpacity = 0f;
 
         ImageView NeutralImage = view.findViewById(R.id.Neutral);
         ImageView HappyImage = view.findViewById(R.id.Happy);
         ImageView SadImage = view.findViewById(R.id.Sad);
 
-        if("HAPPY".equals(sentiment)) {
+        if ("HAPPY".equals(sentiment)) {
             HappyImage.setAlpha(1f);
             NeutralImage.setAlpha(inactiveMoodBtnOpacity);
             SadImage.setAlpha(inactiveMoodBtnOpacity);
         }
-        if("NEUTRAL".equals(sentiment)) {
+        if ("NEUTRAL".equals(sentiment)) {
             HappyImage.setAlpha(inactiveMoodBtnOpacity);
             NeutralImage.setAlpha(1f);
             SadImage.setAlpha(inactiveMoodBtnOpacity);
         }
-        if("SAD".equals(sentiment)) {
+        if ("SAD".equals(sentiment)) {
             HappyImage.setAlpha(inactiveMoodBtnOpacity);
             NeutralImage.setAlpha(inactiveMoodBtnOpacity);
             SadImage.setAlpha(1f);
         }
 
-
+        // show the prompt key (question) and value (answer)
         String prompt_key = getArguments().getString("prompt_key");
         TextView promptKeyTextView = view.findViewById(R.id.prompt_key);
         promptKeyTextView.setText(Prompts.possiblePrompts.get(prompt_key));
@@ -138,50 +107,88 @@ public class ViewJournalEntry extends Fragment {
         TextView ratingTextView = view.findViewById(R.id.prompt_val);
         ratingTextView.setText(prompt_value + " / 5");
 
-
         // show image if present
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
-
+        // get reference to the image
         StorageReference imageRef = storageRef.child(auth.getUid() + "/" + day + ".jpg");
-
         File localFile;
         try {
+            // create temp local file to hold image when we download
             localFile = File.createTempFile("images", "jpg");
 
             File finalLocalFile = localFile;
+            // load image - if this entry has no image, the catch block deals with this
             imageRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-                // Local temp file has been created
                 ImageView imgView = view.findViewById(R.id.viewEntryImage);
-                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getAbsolutePath());
-                ExifInterface exif;
-                try {
-                    exif = new ExifInterface(finalLocalFile);
-
-                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                    Matrix matrix = new Matrix();
-                    switch (orientation) {
-                        case ExifInterface.ORIENTATION_ROTATE_90:
-                            matrix.postRotate(90);
-                            break;
-                        case ExifInterface.ORIENTATION_ROTATE_180:
-                            matrix.postRotate(180);
-                            break;
-                        case ExifInterface.ORIENTATION_ROTATE_270:
-                            matrix.postRotate(270);
-                            break;
-                    }
-                    Bitmap rotatedBitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-                    imgView.setImageBitmap(rotatedBitmap);
-
-                } catch (IOException e) {
-                    imgView.setImageBitmap(bmp);
-                }
-            }).addOnFailureListener(exception -> Toast.makeText(getContext(), "Unable to load image. " + exception, Toast.LENGTH_SHORT).show());
+                /*
+                to display image, we need to decode the downloaded file into a bitmap, rotate it &
+                then resize it. this is computationally expensive so could temporarily freeze
+                the app's UI while it happens. to prevent this, we're using threading/async task
+                to offload these processes to another thread. once all is done, the result will
+                be shown in the imgView ImageView, all without freezing the app's UI
+                */
+                new ProcessImage(imgView, finalLocalFile).execute();
+            }).addOnFailureListener(e -> {
+                // no image exists for this entry - this is ok
+            });
         } catch (IOException e) {
-            Toast.makeText(getContext(), "Unable to load image. " + e, Toast.LENGTH_SHORT).show();
+            // unable to create temp file for image
+            Toast.makeText(getContext(), "Unable to display image. " + e, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class ProcessImage extends AsyncTask<String, Void, Bitmap> {
+        // String is the params input to doInBackground, not used in our case
+        // Void is any output produced during doInBackground, nothing in our case
+        // Bitmap is the final output from doInBackground
+
+        private ImageView imgView;
+        private File localFile;
+
+        public ProcessImage(ImageView imgView, File localFile) {
+            this.imgView = imgView;
+            this.localFile = localFile;
         }
 
+        // this method does the heavy lifting - i.e., all the image processing
+        protected Bitmap doInBackground(String... params) {
+            System.out.println("async starting");
+            // Local temp file has been created, decode image from Firebase storage into it
+            Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+            ExifInterface exif;
+            try {
+                /*
+                 sometimes images doesn't appear in correct orientation so we get EXIF
+                 orientation info and then manually rotate
+                 */
+                // get exif orientation info
+                exif = new ExifInterface(localFile);
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                // rotate manually
+                Matrix matrix = new Matrix();
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        matrix.postRotate(90);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        matrix.postRotate(180);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        matrix.postRotate(270);
+                        break;
+                }
+                return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+
+            } catch (IOException e) {
+                // if rotation fails for some reason, just show image as is
+                return bmp;
+            }
+        }
+
+        public void onPostExecute(Bitmap bmp) {
+            imgView.setImageBitmap(bmp);
+        }
     }
 }
