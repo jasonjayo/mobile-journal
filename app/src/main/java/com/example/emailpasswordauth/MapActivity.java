@@ -152,12 +152,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         auth = FirebaseAuth.getInstance();
 
-        Button myGreatButton = findViewById(R.id.myGreatButton);
-        myGreatButton.setOnClickListener(view -> {
-            Log.d("point", markerLocations.toString());
-        });
+
     }
 
+    //Updates the Ui of the map depending on if user has granted permission (enables blue location icon at user location and centres map to user location)
     private void updateLocationUI() {
         if (map == null) {
             return;
@@ -184,6 +182,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
          */
         try {
             if (locationPermissionGranted) {
+                // FusedLocationProvider returns a single location fix representing the best estimate of the current location of the device
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
@@ -199,6 +198,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 map.getUiSettings().setMyLocationButtonEnabled(true);
                             }
                         } else {
+                            // if cant get location of user, move map to default location which is Limerick
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
                             map.moveCamera(CameraUpdateFactory
@@ -231,6 +231,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    // Callback function for getLocationPermission function
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -260,8 +261,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     appUsers.addAll(documents);
                     for (int i = 0; i < appUsers.size(); i++) {
                         String currentId = appUsers.get(i).getId();
-                        Log.d("userIds", appUsers.get(i).getId()); // will show all ids of users
-                        DocumentReference appUserDoc = appUsers.get(i).getReference(); // reference to all these user profs
+                        DocumentReference appUserDoc = appUsers.get(i).getReference(); // Storage reference for each users profile in Firestore
 
                         //  **** Get all the individual entries within this users entries collection
                         int finalI = i;
@@ -271,21 +271,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 if (task.isSuccessful()) {
                                     Log.d("goodjob", " this worked ");
                                     List<DocumentSnapshot> documents2 = task.getResult().getDocuments();
-                                    appUserEntries = new ArrayList<>();
-                                    appUserEntries.addAll(documents2);
+                                    appUserEntries = new ArrayList<>(); // Contains all the entries for each user of app.
+                                    appUserEntries.addAll(documents2); //
                                     for (int j = 0; j < appUserEntries.size(); j++) {
 
 
-                                        if (appUserEntries.get(j).contains("entry_lat")) {
+                                        if (appUserEntries.get(j).contains("entry_lat")) { //Check if location fields are in the entry so we can add marker, otherwise ignore
 
-                                            StorageReference imageRef = storageRef.child(currentId + "/" + appUserEntries.get(j).getId() + ".jpg");
+                                            StorageReference imageRef = storageRef.child(currentId + "/" + appUserEntries.get(j).getId() + ".jpg");  // Storage reference for image associated with each entry
                                             Log.d("imageRef", imageRef.toString());
-
+                                            // Getting the image from the reference
                                             try {
                                                 File localFile = File.createTempFile("images", "jpg");
                                                 int finalJ = j;
                                                 DocumentSnapshot userEntry = appUserEntries.get(j);
                                                 int userEntriesLength = appUserEntries.size();
+
                                                 imageRef.getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
@@ -324,7 +325,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
                                                         }
-//                                                        System.out.println("LAT LONG EARLY: " + appUserEntries.get(finalJ));
+
+                                                        // TBR
                                                         System.out.println("CONTENT: " + userEntry.get("content"));
                                                         entryInfo info = new entryInfo(
                                                                 (Double) userEntry.get("entry_lat"),
@@ -334,9 +336,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                                 Image
 
                                                         );
-                                                        Log.d("krabs", info.entryContent);
-                                                        entryMarkers.add(info);
 
+                                                        // TBR   entryMarkers.add(info);
+                                                        // If image retrieved isnt null we add as icon for marker
                                                         if (Image != null) {
                                                             map.addMarker(new MarkerOptions()
                                                                     .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
@@ -344,6 +346,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                                     .snippet((String) userEntry.get("content"))
                                                                     .icon(BitmapDescriptorFactory.fromBitmap(Image))
                                                             );
+                                                            // if image retrieved is null then we dont add icon, and add default marker icon
                                                         } else {
                                                             map.addMarker(new MarkerOptions()
                                                                     .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
@@ -354,19 +357,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
                                                         if ((finalI == appUsers.size() - 1) && (finalJ == userEntriesLength - 1)) {
-//                                                            markersLoaded();
                                                         }
-//                                                        count--;
-//                                                        if (count == 0) {
-//                                                            markersLoaded();
-//                                                        }
+
                                                     }
                                                 }).addOnFailureListener(new OnFailureListener() {
                                                     @Override
                                                     public void onFailure(@NonNull Exception e) {
                                                         System.out.println("FILE NOT EXISTS for final j " + finalJ);
 //                                                        Toast.makeText(MapActivity.this, "failed to retrieve", Toast.LENGTH_SHORT).show();
-
+                                                        //TBR
                                                         entryInfo info = new entryInfo(
                                                                 (Double) userEntry.get("entry_lat"),
                                                                 (Double) userEntry.get("entry_long"),
@@ -375,8 +374,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                                 null
 
                                                         );
-                                                        Log.d("krabs", info.entryContent);
-                                                        entryMarkers.add(info);
+
+                                                        //entryMarkers.add(info);
 
                                                         map.addMarker(new MarkerOptions()
                                                                 .position(new LatLng((Double) userEntry.get("entry_lat"), (Double) userEntry.get("entry_long")))
@@ -384,25 +383,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                                 .snippet((String) userEntry.get("content"))
                                                         );
 
-//                                                        if ((finalI == appUsers.size() - 1) && (finalJ == userEntriesLength - 1)) {
-//                                                            markersLoaded();
-//                                                        }
-//                                                        count--;
-//                                                        if (count == 0) {
-//                                                            markersLoaded();
-//                                                        }
                                                     }
                                                 });
                                             } catch (IOException e) {
                                                 Toast.makeText(getApplicationContext(), "error here" + e, Toast.LENGTH_SHORT).show();
                                             }
-//                                            }
-//                                            Image = null;
-//                                            ArrayList<Double> userCoords = new ArrayList<Double>();
-//                                            userCoords.add((Double) appUserEntries.get(i).get("entry_lat"));
-//                                            userCoords.add((Double) appUserEntries.get(i).get("entry_long"));
-//                                            markerLocations.add(userCoords);
-
 
                                         }
                                     }
@@ -421,7 +406,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
-
+    // TO BE REMOVED
     public void markersLoaded() {
         System.out.println("============ MARKERS LOADED ============");
 //        Log.d("MARKERS", markerLocations.toString());
@@ -457,29 +442,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 System.out.println("DOESNT HAVE IMAGE ADDED");
             }
 
-//            if (i == 0) {
-//                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(entryMarkers.get(i).entryLat, entryMarkers.get(i).entryLong), 15));
-//            }
-
-//        for (int i = 0; i < markerLocations.size(); i++) {
-//            Double lat = (Double) markerLocations.get(i).get(0);
-//            Double lon = (Double) markerLocations.get(i).get(1);
-//
-//            LatLng marker = new LatLng(lat, lon);
-//            markers.add(marker);
-//
-//        }
-//        for (int k = 0; k < markers.size(); k++) {
-//            Log.d("MARKER ADDING", "Adding marker to map " + markers.get(k).toString());
-//            this.map.addMarker(new MarkerOptions()
-//                    .position((LatLng) markers.get(k)).title("bro").snippet("hello there")
-//                    );
-//
-//            if (k == 0) {
-//                this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(k), 15));
-//                // only want the most recent ten markers
-//            }
-//        }
 
             System.out.println("MARKERS PRINTING FINISHED " + i);
         }
@@ -497,10 +459,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         this.map = googleMap;
         this.map.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapActivity.this));
 
-
-//        this.map.setOnMarkerClickListener(this);
-
-
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
@@ -508,14 +466,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getDeviceLocation();
 
         getEntryLocations();
-//        Log.d("point", markerLocations.toString());
-//        for(int k = 0; k < markers.size(); k++){
-//            googleMap.addMarker(new MarkerOptions()
-//                    .position(markers.get(k)));
-//        }
-        // googleMap.addMarker(new MarkerOptions()
-        //        .position(limerick).title("Limerick"));
-//        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markers.get(1), 15));
+
 
     }
 
@@ -524,11 +475,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
-
-
-//    @Override
-//    public boolean onMarkerClick(@NonNull Marker marker) {
-//        Toast.makeText(this, "My Position" + marker.getPosition(), Toast.LENGTH_SHORT).show();
-//        return false;
-//    }
 }
+
