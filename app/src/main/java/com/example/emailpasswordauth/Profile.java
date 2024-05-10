@@ -100,7 +100,7 @@ public class Profile extends Fragment {
                                     LinearLayout.LayoutParams.MATCH_PARENT,
                                     LinearLayout.LayoutParams.WRAP_CONTENT
                             );
-                            userEntries.setText(String.valueOf(documents.size() + 1) + " Journal Entries");
+                            userEntries.setText(String.valueOf(documents.size()) + " Journal Entries");
                             RatingBar avgRating = getView().findViewById(R.id.moodRating);
                             int totalRatings = 0, happyCount = 0, neutralCount = 0, sadCount = 0;
                             //Make indexes for prompts to later make ratingbars.

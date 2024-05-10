@@ -153,9 +153,9 @@ public class ViewJournalEntry extends Fragment {
 
         // this method does the heavy lifting - i.e., all the image processing
         protected Bitmap doInBackground(String... params) {
-            System.out.println("async starting");
             // Local temp file has been created, decode image from Firebase storage into it
             Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+            bmp = Bitmap.createScaledBitmap(bmp, bmp.getWidth() / 2, bmp.getHeight() / 2, false);
             ExifInterface exif;
             try {
                 /*

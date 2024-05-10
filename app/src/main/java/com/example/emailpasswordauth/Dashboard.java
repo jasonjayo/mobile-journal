@@ -131,7 +131,6 @@ public class Dashboard extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        System.out.println("resuming");
         getEntriesList();
     }
 }

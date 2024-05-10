@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             EditText passwordInput = findViewById(R.id.editTextTextPassword);
             String password = passwordInput.getText().toString();
 
-            if (password.length() > 0) {
+            if (email.length() > 0 && password.length() > 0) {
                 signIn(email, password);
             }
         });
@@ -47,22 +47,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void signIn(String email, String password) {
         auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        System.out.println("finished sign in");
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = auth.getCurrentUser();
-                            Toast.makeText(MainActivity.this, "Authentication successful.",
-                                    Toast.LENGTH_SHORT).show();
-                            System.out.println("Successfully signed in as " + user.getEmail());
-                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        FirebaseUser user = auth.getCurrentUser();
+                        Toast.makeText(MainActivity.this, "Authentication successful.",
+                                Toast.LENGTH_SHORT).show();
+                        System.out.println("Successfully signed in as " + user.getEmail());
+                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Toast.makeText(MainActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }

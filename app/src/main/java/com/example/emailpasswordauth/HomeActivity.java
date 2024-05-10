@@ -97,7 +97,7 @@ public class HomeActivity extends AppCompatActivity {
         // Build and display the notification
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         Notification.Builder builder = new Notification.Builder(this, "Reminders")
-                .setSmallIcon(R.drawable.journal_app_logo)
+                .setSmallIcon(R.drawable.ic_drawable)
                 .setContentTitle(title)
                 .setContentText(content)
                 .setAutoCancel(true)

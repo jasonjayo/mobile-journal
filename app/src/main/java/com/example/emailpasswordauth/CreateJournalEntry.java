@@ -110,7 +110,6 @@ public class CreateJournalEntry extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-
         Button create_btn = findViewById(R.id.create_btn);
 
         // choose random prompt and display
@@ -228,7 +227,7 @@ public class CreateJournalEntry extends AppCompatActivity {
             // ask for camera permission
             ActivityCompat.requestPermissions(CreateJournalEntry.this, new String[]{android.Manifest.permission.CAMERA}, 1);
         } else {
-            // launch camera
+            // launch camera - image will stored after capture in URI specified by imageUri
             addPicLauncher.launch(imageUri);
         }
     }
@@ -244,7 +243,7 @@ public class CreateJournalEntry extends AppCompatActivity {
         */
         if (requestCode == 1) { // if requested camera permissions
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                addPicLauncher.launch(imageUri);
+                addPicLauncher.launch(imageUri); // launch camera
             } else {
                 Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show();
             }

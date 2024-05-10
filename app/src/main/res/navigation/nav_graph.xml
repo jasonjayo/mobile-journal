@@ -14,7 +14,7 @@
         android:id="@+id/dashboard"
         android:name="com.example.emailpasswordauth.Dashboard"
         android:label="fragment_dashboard"
-        tools:layout="@layout/fragment_dashboard" >
+        tools:layout="@layout/fragment_dashboard">
         <action
             android:id="@+id/action_dashboard_to_viewJournalEntry"
             app:destination="@id/viewJournalEntry" />
@@ -25,5 +25,6 @@
     <fragment
         android:id="@+id/viewJournalEntry"
         android:name="com.example.emailpasswordauth.ViewJournalEntry"
-        android:label="ViewJournalEntry" />
+        android:label="ViewJournalEntry"
+        tools:layout="@layout/fragment_view_journal_entry" />
 </navigation>
